@@ -14,10 +14,10 @@ func main() {
 		logger.Log.Error("Failed to init DB: ", err)
 	}
 
-	router := gin.Default()
-	handlers.RegisterRoutes(router)
+	r := gin.Default()
+	handlers.RegisterRoutes(&r.RouterGroup)
 
-	routerErr := router.Run(":8080")
+	routerErr := r.Run(":8080")
 
 	if routerErr != nil {
 		panic(routerErr)

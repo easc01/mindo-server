@@ -14,10 +14,13 @@ import (
 
 const PLAYLIST = "/playlists"
 
-func RegisterPlaylist(router *gin.Engine) {
-	router.POST(PLAYLIST, createPlaylistHandler)
-	router.GET(PLAYLIST, getAllPlaylistsHandler)
-	router.GET(PLAYLIST+"/:id", getPlaylistByIdHandler)
+func RegisterPlaylist(rg *gin.RouterGroup) {
+	playlistRg := rg.Group("/playlists")
+	{
+		playlistRg.POST("", createPlaylistHandler)
+		playlistRg.GET("", getAllPlaylistsHandler)
+		playlistRg.GET("/:id", getPlaylistByIdHandler)
+	}
 	logger.Log.Info("Registered playlist routes")
 }
 
