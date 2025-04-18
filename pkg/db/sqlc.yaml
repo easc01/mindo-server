@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - schema: "pkg/db/schema.sql" # Path to your PostgreSQL schema file
+    queries: "pkg/db/queries/*.sql" # Path to your SQL query files (assuming playlist.sql is inside the queries folder)
+    engine: "postgresql" # PostgreSQL as your database engine
+    gen:
+      go:
+        package: "models" # The Go package where the generated code will go
+        out: "internal/models" # The output directory for the generated Go code

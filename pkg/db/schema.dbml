@@ -1,0 +1,189 @@
+// playlist feature
+
+Table playlist {
+  id uuid [primary key]
+  name string
+  description string
+  thumbnail_url string
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table topic {
+  id uuid [primary key]
+  number int
+  name string
+  playlist_id uuid [not null, ref: > playlist.id]
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table study_material {
+  id uuid [primary key]
+  topic_id uuid [not null, unique, ref: - topic.id]
+  title string
+  content text
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table saved_study_material {
+  id uuid [primary key]
+  topic_id uuid [not null, ref: > topic.id]
+  user_id uuid [not null, ref: > user.id]
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table youtube_video {
+  id uuid [primary key]
+  topic_id uuid [not null, ref: > topic.id]
+  title string
+  video_date timestamp
+  video_views string
+  thumbnail_url string
+  expiry_at timestamp
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table watched_video {
+  id uuid [primary key]
+  user_id uuid [not null, ref: > user.id]
+  youtube_video_id uuid [not null, ref: > youtube_video.id]
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table watched_playlist {
+  id uuid [primary key]
+  user_id uuid [not null, ref: > user.id]
+  playlist_id uuid [not null, ref: > playlist.id]
+  progress int
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+// Quiz feature
+Table quiz {
+  id uuid [primary key]
+  name string
+  thumbnail_url string
+  play_count int
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table quiz_question {
+  id uuid [primary key]
+  quiz_id uuid [not null, ref: > quiz.id]
+  question string
+  options string[]
+  correct_option int
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table quiz_result {
+  id uuid [primary key]
+  quiz_id uuid [not null, ref: > quiz.id]
+  user_id uuid [not null, ref: > user.id]
+  score decimal
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table quiz_result_question {
+  id uuid [primary key]
+  quiz_result_id uuid [not null, ref: > quiz_result.id]
+  quiz_question_id uuid [not null, ref: > quiz_question.id]
+  attempted_option int
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+// Communities
+Table community {
+  id uuid [primary key]
+  title string
+  about string
+  thumbnail_url string
+  logo_url string
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table message {
+  id uuid [primary key]
+  user_id uuid [not null, ref: > user.id]
+  community_id uuid [not null, ref: > community.id]
+  content TEXT
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table joined_commuinity {
+  id uuid [primary key]
+  user_id uuid [not null, ref: > user.id]
+  community_id uuid [not null, ref: > community.id]
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+// app features
+Table user {
+  id uuid [primary key]
+  user_type enum('app_user', 'admin')
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table app_user_interest {
+  id uuid [primary key]
+  app_user_id uuid [not null, ref: > app_user.user_id]
+  name string
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table app_user {
+  user_id uuid [ref: - user.id, primary key]
+  username string
+  profile_picture_url string
+  bio string
+  name string
+  mobile string
+  email string
+  password_hash string
+  last_login_at timestamp
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
+
+Table admin_user {
+  user_id uuid [ref: - user.id, primary key]
+  name string
+  email string
+  password_hash string
+  last_login_at timestamp
+  updated_at timestamp
+  created_at timestamp
+  updated_by uuid
+}
