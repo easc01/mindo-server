@@ -10,7 +10,10 @@ import (
 func init() {
 	dotenvErr := godotenv.Load()
 	if dotenvErr != nil {
-		logger.Log.Errorf("error loading .env file, continuing with system environment variables, %s", dotenvErr)
+		logger.Log.Errorf(
+			"error loading .env file, continuing with system environment variables, %s",
+			dotenvErr,
+		)
 	}
 }
 

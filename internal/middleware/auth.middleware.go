@@ -37,14 +37,21 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		appUser, appUserErr := db.Queries.GetAppUserByClientOAuthID(c.Request.Context(), utils.GetSQLNullString(payload.Subject))
+		appUser, appUserErr := db.Queries.GetAppUserByClientOAuthID(
+			c.Request.Context(),
+			utils.GetSQLNullString(payload.Subject),
+		)
 		if appUserErr != nil {
 			if errors.Is(appUserErr, sql.ErrNoRows) {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 			} else {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 			}
-			logger.Log.Errorf("failed to get user of auth client id: %s, %s", payload.Subject, appUserErr)
+			logger.Log.Errorf(
+				"failed to get user of auth client id: %s, %s",
+				payload.Subject,
+				appUserErr,
+			)
 			c.Abort()
 			return
 		}

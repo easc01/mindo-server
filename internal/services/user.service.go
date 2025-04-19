@@ -50,7 +50,7 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 		Email:         utils.GetSQLNullString(newUserData.Email),
 		Mobile:        utils.GetSQLNullString(newUserData.Mobile),
 		PasswordHash:  sql.NullString{String: "", Valid: false},
-		
+
 		UpdatedBy: uuid.NullUUID{
 			UUID:  newUserID,
 			Valid: true,
@@ -59,13 +59,21 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 
 	if appUserErr != nil {
 		tx.Rollback()
-		logger.Log.Errorf("failed to create new app_user and user of user_id %s, due to %s", newUserID, appUserErr)
+		logger.Log.Errorf(
+			"failed to create new app_user and user of user_id %s, due to %s",
+			newUserID,
+			appUserErr,
+		)
 		return structs.AppUserDataDTO{}, appUserErr
 	}
 
 	txErr := tx.Commit()
 	if txErr != nil {
-		logger.Log.Errorf("failed to create new app_user and user of user_id %s, due to %s", newUserID, txErr)
+		logger.Log.Errorf(
+			"failed to create new app_user and user of user_id %s, due to %s",
+			newUserID,
+			txErr,
+		)
 		return structs.AppUserDataDTO{}, userErr
 	}
 

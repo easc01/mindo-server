@@ -14,11 +14,18 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
-func GoogleAuthService(c context.Context, googleReq structs.GoogleLoginRequest) (structs.AppUserDataDTO, error) {
+func GoogleAuthService(
+	c context.Context,
+	googleReq structs.GoogleLoginRequest,
+) (structs.AppUserDataDTO, error) {
 
 	payload, payloadErr := idtoken.Validate(c, googleReq.IDToken, config.GetConfig().GoogleClientId)
 	if payloadErr != nil {
-		logger.Log.Errorf("invalidate app user token %s for token %s", payloadErr, googleReq.IDToken)
+		logger.Log.Errorf(
+			"invalidate app user token %s for token %s",
+			payloadErr,
+			googleReq.IDToken,
+		)
 		return structs.AppUserDataDTO{}, payloadErr
 	}
 
@@ -34,14 +41,22 @@ func GoogleAuthService(c context.Context, googleReq structs.GoogleLoginRequest) 
 	}
 
 	// Check if appUser exists by oauthclientId and update last login
-	appUser, appUserErr := db.Queries.UpdateUserLastLoginAtByOAuthClientID(c, utils.GetSQLNullString(appUserParams.OauthClientID))
+	appUser, appUserErr := db.Queries.UpdateUserLastLoginAtByOAuthClientID(
+		c,
+		utils.GetSQLNullString(appUserParams.OauthClientID),
+	)
 
 	if appUserErr != nil {
 		if errors.Is(appUserErr, sql.ErrNoRows) {
 			// Create new user
 			newAppUser, newAppUserErr := CreateNewAppUser(appUserParams)
 			if newAppUserErr != nil {
-				logger.Log.Errorf("failed to create app user %s for email %s oauth client id %s", newAppUserErr, appUserParams.Email, appUserParams.OauthClientID)
+				logger.Log.Errorf(
+					"failed to create app user %s for email %s oauth client id %s",
+					newAppUserErr,
+					appUserParams.Email,
+					appUserParams.OauthClientID,
+				)
 				return structs.AppUserDataDTO{}, newAppUserErr
 			}
 
@@ -50,7 +65,11 @@ func GoogleAuthService(c context.Context, googleReq structs.GoogleLoginRequest) 
 		}
 
 		// Log unexpected DB errors
-		logger.Log.Errorf("failed to update last login %s for oauth client id %s", appUserErr, appUserParams.OauthClientID)
+		logger.Log.Errorf(
+			"failed to update last login %s for oauth client id %s",
+			appUserErr,
+			appUserParams.OauthClientID,
+		)
 		return structs.AppUserDataDTO{}, appUserErr
 	}
 

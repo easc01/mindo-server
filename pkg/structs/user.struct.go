@@ -35,4 +35,3 @@ type NewAppUserParams struct {
 	Mobile        string
 	OauthClientID string
 }
-

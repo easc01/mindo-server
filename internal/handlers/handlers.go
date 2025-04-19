@@ -12,7 +12,6 @@ func InitREST() {
 	r := gin.Default()
 
 	r.Use(middleware.ResponseFormatter())
-	// Use the gin cors middleware
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
@@ -25,7 +24,7 @@ func InitREST() {
 	routerErr := r.Run(":8080")
 
 	if routerErr != nil {
-		logger.Log.Error("failed to start router")
+		logger.Log.Errorf("failed to start router, %s", routerErr)
 	}
 }
 

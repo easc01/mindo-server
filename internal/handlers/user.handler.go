@@ -2,7 +2,8 @@ package handlers
 
 import (
 	"database/sql"
-	"net/http"
+	"fmt"
+	HttpStatus "net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 	"github.com/ishantSikdar/mindo-server/internal/services"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/utils"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
 )
 
 func RegisterUserRoutes(rg *gin.RouterGroup) {
@@ -25,11 +27,13 @@ func RegisterUserRoutes(rg *gin.RouterGroup) {
 func getUserByID(c *gin.Context) {
 	paramId := c.Param("id")
 
-	parsedId, userErr := uuid.Parse(paramId)
-	if userErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid user ID",
-		})
+	parsedId, parseErr := uuid.Parse(paramId)
+	if parseErr != nil {
+		http.NewErrorResponse(
+			HttpStatus.StatusBadRequest,
+			constants.InvalidUserID,
+			parseErr,
+		).Send(c)
 		return
 	}
 
@@ -38,18 +42,25 @@ func getUserByID(c *gin.Context) {
 	if userErr != nil {
 		if userErr == sql.ErrNoRows {
 			logger.Log.Errorf("user %s not found, %s", parsedId, userErr)
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": "User not found",
-			})
+			http.NewErrorResponse(
+				HttpStatus.StatusNotFound,
+				fmt.Sprintf("User of %s ID not found", parsedId),
+				userErr,
+			).Send(c)
 			return
 		}
 
 		logger.Log.Errorf("failed to get user %s userID: %s", userErr, parsedId)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Something went wrong while fetching user",
-		})
+		http.NewErrorResponse(
+			HttpStatus.StatusInternalServerError,
+			constants.SomethingWentWrong,
+			userErr,
+		).Send(c)
 		return
 	}
 
-	c.JSON(http.StatusFound, user)
+	http.NewResponse(
+		HttpStatus.StatusFound,
+		user,
+	).Send(c)
 }
