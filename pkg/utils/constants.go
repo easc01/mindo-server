@@ -1,6 +1,7 @@
 package utils
 
 const (
-	Blank   = ""
-	IdParam = "/:id"
+	Blank         = ""
+	IdParam       = "/:id"
+	Authorization = "Authorization"
 )

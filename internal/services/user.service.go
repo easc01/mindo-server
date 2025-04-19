@@ -95,7 +95,7 @@ func GetAppUserByUserID(id uuid.UUID) (models.GetAppUserByUserIDRow, error) {
 			return models.GetAppUserByUserIDRow{}, userErr
 		}
 
-		logger.Log.Errorf("Failed to get user of ID %s, %s", id, userErr)
+		logger.Log.Errorf("failed to get user of ID %s, %s", id, userErr)
 		return models.GetAppUserByUserIDRow{}, userErr
 	}
 

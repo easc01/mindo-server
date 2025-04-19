@@ -271,6 +271,75 @@ func (q *Queries) GetAppUserByUsername(ctx context.Context, username sql.NullStr
 	return i, err
 }
 
+const getAppUserWithInterestsByUserID = `-- name: GetAppUserWithInterestsByUserID :one
+SELECT 
+    au.user_id,
+    au.username,
+    au.profile_picture_url,
+    au.bio,
+    au.name,
+    au.mobile,
+    au.email,
+    au.last_login_at,
+    au.created_at,
+    au.updated_at,
+    au.updated_by,
+    COALESCE(
+        jsonb_agg(
+            jsonb_build_object(
+                'id', aui.id,
+                'name', COALESCE(aui.name, i.name)
+            )
+        ) FILTER (WHERE aui.id IS NOT NULL),
+        '[]'::jsonb
+    ) AS interests
+FROM 
+    app_user au
+LEFT JOIN 
+    app_user_interest aui ON au.user_id = aui.app_user_id
+LEFT JOIN 
+    interest i ON aui.interest_id = i.id
+WHERE 
+    au.user_id = $1
+GROUP BY 
+    au.user_id
+`
+
+type GetAppUserWithInterestsByUserIDRow struct {
+	UserID            uuid.UUID
+	Username          sql.NullString
+	ProfilePictureUrl sql.NullString
+	Bio               sql.NullString
+	Name              sql.NullString
+	Mobile            sql.NullString
+	Email             sql.NullString
+	LastLoginAt       sql.NullTime
+	CreatedAt         sql.NullTime
+	UpdatedAt         sql.NullTime
+	UpdatedBy         uuid.NullUUID
+	Interests         interface{}
+}
+
+func (q *Queries) GetAppUserWithInterestsByUserID(ctx context.Context, userID uuid.UUID) (GetAppUserWithInterestsByUserIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getAppUserWithInterestsByUserID, userID)
+	var i GetAppUserWithInterestsByUserIDRow
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.ProfilePictureUrl,
+		&i.Bio,
+		&i.Name,
+		&i.Mobile,
+		&i.Email,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UpdatedBy,
+		&i.Interests,
+	)
+	return i, err
+}
+
 const updateUserLastLoginAtByOAuthClientID = `-- name: UpdateUserLastLoginAtByOAuthClientID :one
 UPDATE app_user
 SET

@@ -1,19 +1,20 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/ishantSikdar/mindo-server/pkg/db"
+	"github.com/ishantSikdar/mindo-server/internal/constants"
+	"github.com/ishantSikdar/mindo-server/internal/middleware"
+	"github.com/ishantSikdar/mindo-server/internal/services"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/utils"
 )
 
 func RegisterUserRoutes(rg *gin.RouterGroup) {
-	userRg := rg.Group("/user")
+	userRg := rg.Group(constants.User, middleware.AuthMiddleware())
 
 	{
 		userRg.GET(utils.IdParam, getUserByID)
@@ -32,7 +33,7 @@ func getUserByID(c *gin.Context) {
 		return
 	}
 
-	user, userErr := db.Queries.GetAppUserByUserID(context.Background(), parsedId)
+	user, userErr := services.GetAppUserByUserID(parsedId)
 
 	if userErr != nil {
 		if userErr == sql.ErrNoRows {
@@ -49,7 +50,6 @@ func getUserByID(c *gin.Context) {
 		})
 		return
 	}
-
 
 	c.JSON(http.StatusFound, user)
 }

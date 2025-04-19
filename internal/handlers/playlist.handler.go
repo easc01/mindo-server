@@ -5,11 +5,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ishantSikdar/mindo-server/internal/constants"
+	"github.com/ishantSikdar/mindo-server/internal/middleware"
 	"github.com/ishantSikdar/mindo-server/pkg/utils"
 )
 
 func RegisterPlaylist(rg *gin.RouterGroup) {
-	playlistRg := rg.Group(constants.Playlists)
+	playlistRg := rg.Group(constants.Playlists, middleware.AuthMiddleware())
 	{
 		playlistRg.POST(utils.Blank, createPlaylistHandler)
 		playlistRg.GET(utils.Blank, getAllPlaylistsHandler)
@@ -18,7 +19,6 @@ func RegisterPlaylist(rg *gin.RouterGroup) {
 }
 
 func createPlaylistHandler(c *gin.Context) {
-
 	c.JSON(http.StatusOK, gin.H{
 		"message": "comming soon",
 	})
