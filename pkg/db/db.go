@@ -11,18 +11,19 @@ import (
 var DB *sql.DB
 var Queries *models.Queries
 
-func InitDB(dsn string) error {
+func InitDB() {
 	var err error
-	DB, err = sql.Open("postgres", dsn)
+	DB, err = sql.Open("postgres", "postgresql://postgres:6515@localhost:5432/mindo?sslmode=disable")
 	if err != nil {
-		return err
+		logger.Log.Error("DB connection failed", err)
+
 	}
 
 	if err := DB.Ping(); err != nil {
-		return err
+		logger.Log.Error("DB ping failure", err)
+
 	}
 
 	Queries = models.New(DB)
 	logger.Log.Info("Database connected and Queries initialized")
-	return nil
 }

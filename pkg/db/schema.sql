@@ -37,7 +37,7 @@ CREATE TABLE "study_material" (
 -- Saved Study Material Table
 CREATE TABLE "saved_study_material" (
   "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  "topic_id" uuid NOT NULL,
+  "study_material_id" uuid NOT NULL,
   "user_id" uuid NOT NULL,
   "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
   "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -172,6 +172,7 @@ CREATE TABLE "user" (
 CREATE TABLE "app_user_interest" (
   "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   "app_user_id" uuid NOT NULL,
+  "interest_id" uuid,
   "name" VARCHAR(255),
   "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
   "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -206,10 +207,18 @@ CREATE TABLE "admin_user" (
   "updated_by" uuid
 );
 
+CREATE TABLE "interest" (
+  "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "name" VARCHAR(255),
+  "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+  "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+  "updated_by" uuid
+);
+
 -- Add Foreign Keys
 ALTER TABLE "topic" ADD FOREIGN KEY ("playlist_id") REFERENCES "playlist" ("id");
 ALTER TABLE "study_material" ADD FOREIGN KEY ("topic_id") REFERENCES "topic" ("id");
-ALTER TABLE "saved_study_material" ADD FOREIGN KEY ("topic_id") REFERENCES "topic" ("id");
+ALTER TABLE "saved_study_material" ADD FOREIGN KEY ("study_material_id") REFERENCES "study_material" ("id");
 ALTER TABLE "saved_study_material" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 ALTER TABLE "youtube_video" ADD FOREIGN KEY ("topic_id") REFERENCES "topic" ("id");
 ALTER TABLE "watched_video" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
@@ -225,6 +234,7 @@ ALTER TABLE "message" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 ALTER TABLE "message" ADD FOREIGN KEY ("community_id") REFERENCES "community" ("id");
 ALTER TABLE "joined_community" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 ALTER TABLE "joined_community" ADD FOREIGN KEY ("community_id") REFERENCES "community" ("id");
+ALTER TABLE "app_user_interest" ADD FOREIGN KEY ("interest_id") REFERENCES "interest" ("id");
 ALTER TABLE "app_user_interest" ADD FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("user_id");
 ALTER TABLE "app_user" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 ALTER TABLE "admin_user" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");

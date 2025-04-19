@@ -81,12 +81,13 @@ type AppUser struct {
 }
 
 type AppUserInterest struct {
-	ID        uuid.UUID
-	AppUserID uuid.UUID
-	Name      sql.NullString
-	UpdatedAt sql.NullTime
-	CreatedAt sql.NullTime
-	UpdatedBy uuid.NullUUID
+	ID         uuid.UUID
+	AppUserID  uuid.UUID
+	InterestID uuid.NullUUID
+	Name       sql.NullString
+	UpdatedAt  sql.NullTime
+	CreatedAt  sql.NullTime
+	UpdatedBy  uuid.NullUUID
 }
 
 type Community struct {
@@ -100,7 +101,15 @@ type Community struct {
 	UpdatedBy    uuid.NullUUID
 }
 
-type JoinedCommuinity struct {
+type Interest struct {
+	ID        uuid.UUID
+	Name      sql.NullString
+	UpdatedAt sql.NullTime
+	CreatedAt sql.NullTime
+	UpdatedBy uuid.NullUUID
+}
+
+type JoinedCommunity struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
 	CommunityID uuid.UUID
@@ -171,12 +180,12 @@ type QuizResultQuestion struct {
 }
 
 type SavedStudyMaterial struct {
-	ID        uuid.UUID
-	TopicID   uuid.UUID
-	UserID    uuid.UUID
-	UpdatedAt sql.NullTime
-	CreatedAt sql.NullTime
-	UpdatedBy uuid.NullUUID
+	ID              uuid.UUID
+	StudyMaterialID uuid.UUID
+	UserID          uuid.UUID
+	UpdatedAt       sql.NullTime
+	CreatedAt       sql.NullTime
+	UpdatedBy       uuid.NullUUID
 }
 
 type StudyMaterial struct {
