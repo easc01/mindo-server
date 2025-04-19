@@ -4,14 +4,12 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/ishantSikdar/mindo-server/internal/constants"
-	"github.com/ishantSikdar/mindo-server/internal/middleware"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 )
 
 func InitREST() {
 	r := gin.Default()
 
-	r.Use(middleware.ResponseFormatter())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},

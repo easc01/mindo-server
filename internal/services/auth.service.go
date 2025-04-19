@@ -75,17 +75,17 @@ func GoogleAuthService(
 
 	return structs.AppUserDataDTO{
 		UserID:            appUser.UserID,
-		Username:          appUser.Username,
-		ProfilePictureUrl: appUser.ProfilePictureUrl,
-		Bio:               appUser.Bio,
-		OauthClientID:     appUser.OauthClientID,
-		Name:              appUser.Name,
-		Mobile:            appUser.Mobile,
-		Email:             appUser.Email,
-		LastLoginAt:       appUser.LastLoginAt,
-		UpdatedAt:         appUser.UpdatedAt,
-		CreatedAt:         appUser.CreatedAt,
-		UpdatedBy:         appUser.UpdatedBy,
+		Username:          appUser.Username.String,
+		ProfilePictureUrl: appUser.ProfilePictureUrl.String,
+		OauthClientID:     appUser.OauthClientID.String,
+		Bio:               appUser.Bio.String,
+		Name:              appUser.Name.String,
+		Mobile:            appUser.Mobile.String,
+		Email:             appUser.Email.String,
+		LastLoginAt:       appUser.LastLoginAt.Time,
+		UpdatedAt:         appUser.UpdatedAt.Time,
+		CreatedAt:         appUser.CreatedAt.Time,
+		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          models.UserTypeAppUser,
 	}, nil
 }

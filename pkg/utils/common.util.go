@@ -8,6 +8,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -109,4 +110,13 @@ func GenerateUsername() string {
 	username := fmt.Sprintf("%s%s-%s", adjective, noun, uid.String()[:8])
 
 	return username
+}
+
+func GetRequestBody(c *gin.Context) (any, error) {
+	var reqBody any
+	if err := c.ShouldBindJSON(&reqBody); err != nil {
+		return nil, fmt.Errorf("valid request body is required")
+	}
+
+	return reqBody, nil
 }

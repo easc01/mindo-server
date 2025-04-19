@@ -79,33 +79,47 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 
 	return structs.AppUserDataDTO{
 		UserID:            appUser.UserID,
-		Username:          appUser.Username,
-		ProfilePictureUrl: appUser.ProfilePictureUrl,
-		OauthClientID:     appUser.OauthClientID,
-		Bio:               appUser.Bio,
-		Name:              appUser.Name,
-		Mobile:            appUser.Mobile,
-		Email:             appUser.Email,
-		LastLoginAt:       appUser.LastLoginAt,
-		UpdatedAt:         appUser.UpdatedAt,
-		CreatedAt:         appUser.CreatedAt,
-		UpdatedBy:         appUser.UpdatedBy,
+		Username:          appUser.Username.String,
+		ProfilePictureUrl: appUser.ProfilePictureUrl.String,
+		OauthClientID:     appUser.OauthClientID.String,
+		Bio:               appUser.Bio.String,
+		Name:              appUser.Name.String,
+		Mobile:            appUser.Mobile.String,
+		Email:             appUser.Email.String,
+		LastLoginAt:       appUser.LastLoginAt.Time,
+		UpdatedAt:         appUser.UpdatedAt.Time,
+		CreatedAt:         appUser.CreatedAt.Time,
+		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          user.UserType.UserType,
 	}, nil
 }
 
-func GetAppUserByUserID(id uuid.UUID) (models.GetAppUserByUserIDRow, error) {
-	user, userErr := db.Queries.GetAppUserByUserID(context.Background(), id)
+func GetAppUserByUserID(id uuid.UUID) (structs.AppUserDataDTO, error) {
+	appUser, appUserErr := db.Queries.GetAppUserByUserID(context.Background(), id)
 
-	if userErr != nil {
-		if userErr == sql.ErrNoRows {
-			logger.Log.Errorf("user of ID %s not found, %s", id, userErr)
-			return models.GetAppUserByUserIDRow{}, userErr
+	if appUserErr != nil {
+		if appUserErr == sql.ErrNoRows {
+			logger.Log.Errorf("user of ID %s not found, %s", id, appUserErr)
+			return structs.AppUserDataDTO{}, appUserErr
 		}
 
-		logger.Log.Errorf("failed to get user of ID %s, %s", id, userErr)
-		return models.GetAppUserByUserIDRow{}, userErr
+		logger.Log.Errorf("failed to get user of ID %s, %s", id, appUserErr)
+		return structs.AppUserDataDTO{}, appUserErr
 	}
 
-	return user, nil
+	return structs.AppUserDataDTO{
+		UserID:            appUser.UserID,
+		Username:          appUser.Username.String,
+		ProfilePictureUrl: appUser.ProfilePictureUrl.String,
+		OauthClientID:     appUser.OauthClientID.String,
+		Bio:               appUser.Bio.String,
+		Name:              appUser.Name.String,
+		Mobile:            appUser.Mobile.String,
+		Email:             appUser.Email.String,
+		LastLoginAt:       appUser.LastLoginAt.Time,
+		UpdatedAt:         appUser.UpdatedAt.Time,
+		CreatedAt:         appUser.CreatedAt.Time,
+		UpdatedBy:         appUser.UpdatedBy.UUID,
+		UserType:          models.UserTypeAppUser,
+	}, nil
 }

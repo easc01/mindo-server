@@ -6,8 +6,8 @@ import (
 
 // Response represents a standardized API response
 type Response struct {
-	Status int         `json:"-"`
-	Data   interface{} `json:"data"`
+	Status int `json:"-"`
+	Data   any `json:"data"`
 }
 
 // ErrorResponse contains detailed error information

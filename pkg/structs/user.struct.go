@@ -1,7 +1,7 @@
 package structs
 
 import (
-	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/ishantSikdar/mindo-server/internal/models"
@@ -13,19 +13,19 @@ type GoogleLoginRequest struct {
 }
 
 type AppUserDataDTO struct {
-	UserID            uuid.UUID
-	UserType          models.UserType
-	Username          sql.NullString
-	ProfilePictureUrl sql.NullString
-	OauthClientID     sql.NullString
-	Bio               sql.NullString
-	Name              sql.NullString
-	Mobile            sql.NullString
-	Email             sql.NullString
-	LastLoginAt       sql.NullTime
-	UpdatedAt         sql.NullTime
-	CreatedAt         sql.NullTime
-	UpdatedBy         uuid.NullUUID
+	UserID            uuid.UUID       `json:"userId"`
+	UserType          models.UserType `json:"userType"`
+	Username          string          `json:"username"`
+	ProfilePictureUrl string          `json:"profilePictureUrl"`
+	OauthClientID     string          `json:"oauthClientId"`
+	Bio               string          `json:"bio"`
+	Name              string          `json:"name"`
+	Mobile            string          `json:"mobile"`
+	Email             string          `json:"email"`
+	LastLoginAt       time.Time       `json:"lastLoginAt"`
+	UpdatedAt         time.Time       `json:"updatedAt"`
+	CreatedAt         time.Time       `json:"createdAt"`
+	UpdatedBy         uuid.UUID       `json:"updatedBy"`
 }
 
 type NewAppUserParams struct {
