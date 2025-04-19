@@ -17,6 +17,7 @@ type AppUserDataDTO struct {
 	UserType          models.UserType
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
+	OauthClientID     sql.NullString
 	Bio               sql.NullString
 	Name              sql.NullString
 	Mobile            sql.NullString
@@ -28,8 +29,9 @@ type AppUserDataDTO struct {
 }
 
 type NewAppUserParams struct {
-	Name     string
-	Username string
-	Email    string
-	Mobile   string
+	Name          string
+	Username      string
+	Email         string
+	Mobile        string
+	OauthClientID string
 }

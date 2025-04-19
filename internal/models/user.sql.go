@@ -13,26 +13,38 @@ import (
 )
 
 const createNewAppUser = `-- name: CreateNewAppUser :one
-INSERT INTO app_user (user_id, name, username, email, mobile, password_hash, updated_by)
+INSERT INTO
+    app_user (
+        user_id,
+        name,
+        username,
+        email,
+        mobile,
+        password_hash,
+        oauth_client_id,
+        updated_by
+    )
 VALUES (
-    $1, -- id
-    $2, -- Name
-    $3, -- Username
-    $4, -- Email
-    $5, -- Mobile
-    $6, -- Password Hash
-    $7  -- Updated By
-) RETURNING user_id, username, profile_picture_url, bio, name, mobile, email, password_hash, last_login_at, updated_at, created_at, updated_by
+        $1, -- id
+        $2, -- Name
+        $3, -- Username
+        $4, -- Email
+        $5, -- Mobile
+        $6, -- Password Hash
+        $7, -- OAuth Client ID
+        $8 -- Updated By
+    ) RETURNING user_id, oauth_client_id, username, profile_picture_url, bio, name, mobile, email, password_hash, last_login_at, updated_at, created_at, updated_by
 `
 
 type CreateNewAppUserParams struct {
-	UserID       uuid.UUID
-	Name         sql.NullString
-	Username     sql.NullString
-	Email        sql.NullString
-	Mobile       sql.NullString
-	PasswordHash sql.NullString
-	UpdatedBy    uuid.NullUUID
+	UserID        uuid.UUID
+	Name          sql.NullString
+	Username      sql.NullString
+	Email         sql.NullString
+	Mobile        sql.NullString
+	PasswordHash  sql.NullString
+	OauthClientID sql.NullString
+	UpdatedBy     uuid.NullUUID
 }
 
 func (q *Queries) CreateNewAppUser(ctx context.Context, arg CreateNewAppUserParams) (AppUser, error) {
@@ -43,11 +55,13 @@ func (q *Queries) CreateNewAppUser(ctx context.Context, arg CreateNewAppUserPara
 		arg.Email,
 		arg.Mobile,
 		arg.PasswordHash,
+		arg.OauthClientID,
 		arg.UpdatedBy,
 	)
 	var i AppUser
 	err := row.Scan(
 		&i.UserID,
+		&i.OauthClientID,
 		&i.Username,
 		&i.ProfilePictureUrl,
 		&i.Bio,
@@ -64,12 +78,13 @@ func (q *Queries) CreateNewAppUser(ctx context.Context, arg CreateNewAppUserPara
 }
 
 const createNewUser = `-- name: CreateNewUser :one
-INSERT INTO "user" (id, user_type, updated_by)
+INSERT INTO
+    "user" (id, user_type, updated_by)
 VALUES (
-    $1, -- id
-    $2, -- UserType
-    $3  -- Updated By
-) RETURNING id, user_type, updated_at, created_at, updated_by
+        $1, -- id
+        $2, -- UserType
+        $3 -- Updated By
+    ) RETURNING id, user_type, updated_at, created_at, updated_by
 `
 
 type CreateNewUserParams struct {
@@ -91,11 +106,12 @@ func (q *Queries) CreateNewUser(ctx context.Context, arg CreateNewUserParams) (U
 	return i, err
 }
 
-const getAppUserByUserID = `-- name: GetAppUserByUserID :one
+const getAppUserByClientOAuthID = `-- name: GetAppUserByClientOAuthID :one
 SELECT
     u.id AS user_id,
     au.username,
     au.profile_picture_url,
+    au.oauth_client_id,
     au.bio,
     au.name,
     au.mobile,
@@ -104,8 +120,62 @@ SELECT
     au.created_at,
     au.updated_at,
     au.updated_by
-FROM
-    app_user au
+FROM app_user au
+    JOIN "user" u ON u.id = au.user_id
+WHERE
+    au.oauth_client_id = $1
+`
+
+type GetAppUserByClientOAuthIDRow struct {
+	UserID            uuid.UUID
+	Username          sql.NullString
+	ProfilePictureUrl sql.NullString
+	OauthClientID     sql.NullString
+	Bio               sql.NullString
+	Name              sql.NullString
+	Mobile            sql.NullString
+	Email             sql.NullString
+	LastLoginAt       sql.NullTime
+	CreatedAt         sql.NullTime
+	UpdatedAt         sql.NullTime
+	UpdatedBy         uuid.NullUUID
+}
+
+func (q *Queries) GetAppUserByClientOAuthID(ctx context.Context, oauthClientID sql.NullString) (GetAppUserByClientOAuthIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getAppUserByClientOAuthID, oauthClientID)
+	var i GetAppUserByClientOAuthIDRow
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.ProfilePictureUrl,
+		&i.OauthClientID,
+		&i.Bio,
+		&i.Name,
+		&i.Mobile,
+		&i.Email,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UpdatedBy,
+	)
+	return i, err
+}
+
+const getAppUserByUserID = `-- name: GetAppUserByUserID :one
+SELECT
+    u.id AS user_id,
+    au.username,
+    au.profile_picture_url,
+    au.oauth_client_id,
+    au.bio,
+    au.name,
+    au.mobile,
+    au.email,
+    au.last_login_at,
+    au.created_at,
+    au.updated_at,
+    au.updated_by
+FROM app_user au
     JOIN "user" u ON u.id = au.user_id
 WHERE
     au.user_id = $1
@@ -115,6 +185,7 @@ type GetAppUserByUserIDRow struct {
 	UserID            uuid.UUID
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
+	OauthClientID     sql.NullString
 	Bio               sql.NullString
 	Name              sql.NullString
 	Mobile            sql.NullString
@@ -132,6 +203,7 @@ func (q *Queries) GetAppUserByUserID(ctx context.Context, userID uuid.UUID) (Get
 		&i.UserID,
 		&i.Username,
 		&i.ProfilePictureUrl,
+		&i.OauthClientID,
 		&i.Bio,
 		&i.Name,
 		&i.Mobile,
@@ -149,6 +221,7 @@ SELECT
     u.id AS user_id,
     au.username,
     au.profile_picture_url,
+    au.oauth_client_id,
     au.bio,
     au.name,
     au.mobile,
@@ -157,8 +230,7 @@ SELECT
     au.created_at,
     au.updated_at,
     au.updated_by
-FROM
-    app_user au
+FROM app_user au
     JOIN "user" u ON u.id = au.user_id
 WHERE
     au.username = $1
@@ -168,6 +240,7 @@ type GetAppUserByUsernameRow struct {
 	UserID            uuid.UUID
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
+	OauthClientID     sql.NullString
 	Bio               sql.NullString
 	Name              sql.NullString
 	Mobile            sql.NullString
@@ -185,6 +258,7 @@ func (q *Queries) GetAppUserByUsername(ctx context.Context, username sql.NullStr
 		&i.UserID,
 		&i.Username,
 		&i.ProfilePictureUrl,
+		&i.OauthClientID,
 		&i.Bio,
 		&i.Name,
 		&i.Mobile,
@@ -197,18 +271,73 @@ func (q *Queries) GetAppUserByUsername(ctx context.Context, username sql.NullStr
 	return i, err
 }
 
-const updateUserLastLoginAtByUsername = `-- name: UpdateUserLastLoginAtByUsername :one
+const updateUserLastLoginAtByOAuthClientID = `-- name: UpdateUserLastLoginAtByOAuthClientID :one
 UPDATE app_user
-SET last_login_at = now()
-WHERE username = $1
-RETURNING
-    user_id,
+SET
+    last_login_at = now()
+WHERE
+    oauth_client_id = $1 RETURNING user_id,
     username,
     profile_picture_url,
     bio,
     name,
     mobile,
     email,
+    oauth_client_id,
+    last_login_at,
+    created_at,
+    updated_at,
+    updated_by
+`
+
+type UpdateUserLastLoginAtByOAuthClientIDRow struct {
+	UserID            uuid.UUID
+	Username          sql.NullString
+	ProfilePictureUrl sql.NullString
+	Bio               sql.NullString
+	Name              sql.NullString
+	Mobile            sql.NullString
+	Email             sql.NullString
+	OauthClientID     sql.NullString
+	LastLoginAt       sql.NullTime
+	CreatedAt         sql.NullTime
+	UpdatedAt         sql.NullTime
+	UpdatedBy         uuid.NullUUID
+}
+
+func (q *Queries) UpdateUserLastLoginAtByOAuthClientID(ctx context.Context, oauthClientID sql.NullString) (UpdateUserLastLoginAtByOAuthClientIDRow, error) {
+	row := q.db.QueryRowContext(ctx, updateUserLastLoginAtByOAuthClientID, oauthClientID)
+	var i UpdateUserLastLoginAtByOAuthClientIDRow
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.ProfilePictureUrl,
+		&i.Bio,
+		&i.Name,
+		&i.Mobile,
+		&i.Email,
+		&i.OauthClientID,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UpdatedBy,
+	)
+	return i, err
+}
+
+const updateUserLastLoginAtByUsername = `-- name: UpdateUserLastLoginAtByUsername :one
+UPDATE app_user
+SET
+    last_login_at = now()
+WHERE
+    username = $1 RETURNING user_id,
+    username,
+    profile_picture_url,
+    bio,
+    name,
+    mobile,
+    email,
+    oauth_client_id,
     last_login_at,
     created_at,
     updated_at,
@@ -223,6 +352,7 @@ type UpdateUserLastLoginAtByUsernameRow struct {
 	Name              sql.NullString
 	Mobile            sql.NullString
 	Email             sql.NullString
+	OauthClientID     sql.NullString
 	LastLoginAt       sql.NullTime
 	CreatedAt         sql.NullTime
 	UpdatedAt         sql.NullTime
@@ -240,6 +370,7 @@ func (q *Queries) UpdateUserLastLoginAtByUsername(ctx context.Context, username 
 		&i.Name,
 		&i.Mobile,
 		&i.Email,
+		&i.OauthClientID,
 		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,

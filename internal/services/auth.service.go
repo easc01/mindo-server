@@ -26,30 +26,31 @@ func GoogleAuthService(c context.Context, googleReq structs.GoogleLoginRequest) 
 	email, _ := payload.Claims["email"].(string)
 
 	appUserParams := structs.NewAppUserParams{
-		Name:     name,
-		Email:    email,
-		Username: payload.Subject,
-		Mobile:   "",
+		Name:          name,
+		Email:         email,
+		OauthClientID: payload.Subject,
+		Username:      utils.GenerateUsername(),
+		Mobile:        utils.Blank,
 	}
 
-	// Check if appUser exists by username/subject
-	appUser, appUserErr := db.Queries.UpdateUserLastLoginAtByUsername(c, utils.GetSQLNullString(appUserParams.Username))
+	// Check if appUser exists by oauthclientId and update last login
+	appUser, appUserErr := db.Queries.UpdateUserLastLoginAtByOAuthClientID(c, utils.GetSQLNullString(appUserParams.OauthClientID))
 
 	if appUserErr != nil {
 		if errors.Is(appUserErr, sql.ErrNoRows) {
 			// Create new user
 			newAppUser, newAppUserErr := CreateNewAppUser(appUserParams)
 			if newAppUserErr != nil {
-				logger.Log.Errorf("failed to create app user %s for email %s username %s", newAppUserErr, appUserParams.Email, appUserParams.Username)
+				logger.Log.Errorf("failed to create app user %s for email %s oauth client id %s", newAppUserErr, appUserParams.Email, appUserParams.OauthClientID)
 				return structs.AppUserDataDTO{}, newAppUserErr
 			}
 
-			logger.Log.Info("new app user created", newAppUser.UserID)
+			logger.Log.Infof("new app user created %s", newAppUser.UserID)
 			return newAppUser, nil
 		}
 
 		// Log unexpected DB errors
-		logger.Log.Errorf("failed to update last login %s for username %s", appUserErr, appUserParams.Username)
+		logger.Log.Errorf("failed to update last login %s for oauth client id %s", appUserErr, appUserParams.OauthClientID)
 		return structs.AppUserDataDTO{}, appUserErr
 	}
 
@@ -58,6 +59,7 @@ func GoogleAuthService(c context.Context, googleReq structs.GoogleLoginRequest) 
 		Username:          appUser.Username,
 		ProfilePictureUrl: appUser.ProfilePictureUrl,
 		Bio:               appUser.Bio,
+		OauthClientID:     appUser.OauthClientID,
 		Name:              appUser.Name,
 		Mobile:            appUser.Mobile,
 		Email:             appUser.Email,

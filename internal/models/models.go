@@ -67,6 +67,7 @@ type AdminUser struct {
 
 type AppUser struct {
 	UserID            uuid.UUID
+	OauthClientID     sql.NullString
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
 	Bio               sql.NullString

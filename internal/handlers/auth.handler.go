@@ -8,6 +8,7 @@ import (
 	"github.com/ishantSikdar/mindo-server/internal/services"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/structs"
+	"github.com/ishantSikdar/mindo-server/pkg/utils"
 )
 
 func RegisterAuth(rg *gin.RouterGroup) {
@@ -33,5 +34,10 @@ func googleAuthHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	userParsed, userParsedErr := utils.ParseSQLResponse(user)
+	if userParsedErr != nil {
+		logger.Log.Error("failed to parsed user data", userParsedErr)
+	}
+
+	c.JSON(http.StatusOK, userParsed)
 }
