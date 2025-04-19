@@ -19,7 +19,6 @@ func RegisterUserRoutes(rg *gin.RouterGroup) {
 		userRg.GET(utils.IdParam, getUserByID)
 	}
 
-	logger.Log.Info("registered user routes")
 }
 
 func getUserByID(c *gin.Context) {
@@ -51,5 +50,6 @@ func getUserByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+
+	c.JSON(http.StatusFound, user)
 }

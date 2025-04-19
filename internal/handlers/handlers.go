@@ -4,12 +4,14 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/ishantSikdar/mindo-server/internal/constants"
+	"github.com/ishantSikdar/mindo-server/internal/middleware"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 )
 
 func InitREST() {
 	r := gin.Default()
 
+	r.Use(middleware.ResponseFormatter())
 	// Use the gin cors middleware
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -35,6 +37,4 @@ func registerRoutes(rg *gin.RouterGroup) {
 		RegisterPlaylist(apiRg)
 		RegisterUserRoutes(apiRg)
 	}
-
-	logger.Log.Info("registered routes")
 }

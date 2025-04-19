@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/ishantSikdar/mindo-server/internal/constants"
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/utils"
 )
 
@@ -16,7 +15,6 @@ func RegisterPlaylist(rg *gin.RouterGroup) {
 		playlistRg.GET(utils.Blank, getAllPlaylistsHandler)
 		playlistRg.GET(utils.IdParam, getPlaylistByIdHandler)
 	}
-	logger.Log.Info("registered playlist routes")
 }
 
 func createPlaylistHandler(c *gin.Context) {

@@ -6,9 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ishantSikdar/mindo-server/internal/constants"
 	"github.com/ishantSikdar/mindo-server/internal/services"
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/structs"
-	"github.com/ishantSikdar/mindo-server/pkg/utils"
 )
 
 func RegisterAuth(rg *gin.RouterGroup) {
@@ -17,7 +15,6 @@ func RegisterAuth(rg *gin.RouterGroup) {
 	{
 		authRg.POST(constants.Google, googleAuthHandler)
 	}
-	logger.Log.Info("registered auth routes")
 }
 
 func googleAuthHandler(c *gin.Context) {
@@ -34,10 +31,5 @@ func googleAuthHandler(c *gin.Context) {
 		return
 	}
 
-	userParsed, userParsedErr := utils.ParseSQLResponse(user)
-	if userParsedErr != nil {
-		logger.Log.Error("failed to parsed user data", userParsedErr)
-	}
-
-	c.JSON(http.StatusOK, userParsed)
+	c.JSON(http.StatusCreated, user)
 }
