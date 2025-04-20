@@ -1,11 +1,13 @@
 package userhandler
 
 import (
+	"net/http"
+
 	"github.com/easc01/mindo-server/internal/middleware"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/http_util"
+	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
@@ -27,7 +29,7 @@ func getAdminUserByID(c *gin.Context) {
 	parsedId, parseErr := uuid.Parse(paramId)
 	if parseErr != nil {
 		httputil.NewErrorResponse(
-			httputil.StatusBadRequest,
+			http.StatusBadRequest,
 			message.InvalidUserID,
 			parseErr.Error(),
 		).Send(c)
@@ -47,7 +49,7 @@ func getAdminUserByID(c *gin.Context) {
 	}
 
 	httputil.NewResponse(
-		httputil.StatusFound,
+		http.StatusFound,
 		user,
 	).Send(c)
 }

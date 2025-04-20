@@ -10,4 +10,5 @@ const (
 	IncorrectPassword    = "password is incorrect"
 	InvalidToken         = "token is invalid"
 	InvalidSigningMethod = "invalid signing method"
+	SignInAgain          = "you have been logged out, sign-in again"
 )

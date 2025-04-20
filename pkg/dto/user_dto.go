@@ -59,11 +59,6 @@ type AdminSignInParams struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
-type UserTokenResponse[T any] struct {
-	Token Token `json:"token"`
-	Data  T     `json:"data"`
-}
-
-type Token struct {
+type TokenResponse struct {
 	AccessToken string `json:"accessToken"`
 }

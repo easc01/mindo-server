@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/easc01/mindo-server/internal/config"
 	"github.com/easc01/mindo-server/internal/models"
@@ -11,7 +12,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/http_util"
+	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
@@ -28,7 +29,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		if token == "" {
 			httputil.NewErrorResponse(
-				httputil.StatusUnauthorized,
+				http.StatusUnauthorized,
 				message.AuthHeaderRequired,
 				message.ProvideAuthHeader,
 			).Send(c)
@@ -40,7 +41,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if payloadErr != nil {
 			logger.Log.Errorf("invalid auth token %s", payloadErr)
 			httputil.NewErrorResponse(
-				httputil.StatusUnauthorized,
+				http.StatusUnauthorized,
 				fmt.Sprintf("Invalid auth token, %s", payloadErr.Error()),
 				payloadErr.Error(),
 			).Send(c)
@@ -55,13 +56,13 @@ func AuthMiddleware() gin.HandlerFunc {
 		if appUserErr != nil {
 			if errors.Is(appUserErr, sql.ErrNoRows) {
 				httputil.NewErrorResponse(
-					httputil.StatusNotFound,
+					http.StatusNotFound,
 					message.UserNotFound,
 					appUserErr.Error(),
 				).Send(c)
 			} else {
 				httputil.NewErrorResponse(
-					httputil.StatusInternalServerError,
+					http.StatusInternalServerError,
 					message.SomethingWentWrong,
 					appUserErr.Error(),
 				).Send(c)

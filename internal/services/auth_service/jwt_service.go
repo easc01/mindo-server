@@ -1,4 +1,4 @@
-package jwtservice
+package authservice
 
 import (
 	"context"

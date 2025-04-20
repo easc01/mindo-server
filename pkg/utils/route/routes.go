@@ -11,5 +11,5 @@ const (
 )
 
 func GetRefreshRoute() string {
-	return Auth + Refresh
+	return Api + Auth + Refresh
 }

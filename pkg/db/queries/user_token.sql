@@ -1,5 +1,4 @@
 -- name: UpsertUserToken :one
-
 INSERT INTO
     user_token (
         user_id,
@@ -19,3 +18,7 @@ DO UPDATE SET
     expires_at = EXCLUDED.expires_at,
     updated_by = EXCLUDED.updated_by
 RETURNING *;
+
+
+-- name: GetUserTokenByRefreshToken :one
+SELECT * FROM user_token WHERE refresh_token = $1;

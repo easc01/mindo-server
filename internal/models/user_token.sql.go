@@ -12,8 +12,26 @@ import (
 	"github.com/google/uuid"
 )
 
-const upsertUserToken = `-- name: UpsertUserToken :one
+const getUserTokenByRefreshToken = `-- name: GetUserTokenByRefreshToken :one
+SELECT id, user_id, refresh_token, expires_at, updated_at, created_at, updated_by FROM user_token WHERE refresh_token = $1
+`
 
+func (q *Queries) GetUserTokenByRefreshToken(ctx context.Context, refreshToken string) (UserToken, error) {
+	row := q.db.QueryRowContext(ctx, getUserTokenByRefreshToken, refreshToken)
+	var i UserToken
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RefreshToken,
+		&i.ExpiresAt,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+		&i.UpdatedBy,
+	)
+	return i, err
+}
+
+const upsertUserToken = `-- name: UpsertUserToken :one
 INSERT INTO
     user_token (
         user_id,

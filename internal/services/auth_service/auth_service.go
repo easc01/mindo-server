@@ -3,20 +3,20 @@ package authservice
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/easc01/mindo-server/internal/config"
 	"github.com/easc01/mindo-server/internal/models"
-	jwtservice "github.com/easc01/mindo-server/internal/services/jwt_service"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/route"
+	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"google.golang.org/api/idtoken"
 )
 
@@ -80,40 +80,15 @@ func GoogleAuthService(
 	}
 
 	// create tokens
-	accessToken, atErr := jwtservice.CreateAccessToken(
-		uuid.New().String(),
-		appUser.UserID.String(),
-		models.UserTypeAppUser,
-	)
-
-	if atErr != nil {
+	accessToken, tokenErr := IssueAuthTokens(c, appUser.UserID)
+	if tokenErr != nil {
 		logger.Log.Errorf(
-			"failed to create access token for userId: %s, %s",
-			appUser.UserID,
-			atErr.Error(),
+			"failed to issue auth tokens for user id: %s, %s",
+			appUser.UserID.String(),
+			tokenErr.Error(),
 		)
-		return dto.AppUserDataDTO{}, http.StatusInternalServerError, atErr
+		return dto.AppUserDataDTO{}, http.StatusInternalServerError, tokenErr
 	}
-
-	refreshToken, rtErr := jwtservice.CreateRefreshTokenByUserId(appUser.UserID)
-	if rtErr != nil {
-		logger.Log.Errorf(
-			"failed to create refresh token for userId: %s, %s",
-			appUser.UserID,
-			rtErr.Error(),
-		)
-		return dto.AppUserDataDTO{}, http.StatusInternalServerError, rtErr
-	}
-
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     constant.RefreshToken,
-		Value:    refreshToken.RefreshToken,
-		HttpOnly: true,
-		Secure:   config.GetConfig().Env == config.Production,
-		Path:     route.GetRefreshRoute(),
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   int(constant.Month),
-	})
 
 	return dto.AppUserDataDTO{
 		AccessToken:       accessToken,
@@ -131,4 +106,36 @@ func GoogleAuthService(
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          models.UserTypeAppUser,
 	}, http.StatusFound, nil
+}
+
+func RefreshTokenService(c *gin.Context, refreshToken string) (dto.TokenResponse, int, error) {
+	// find refresh token
+	userToken, utErr := db.Queries.GetUserTokenByRefreshToken(c, refreshToken)
+	if utErr != nil {
+		if errors.Is(utErr, sql.ErrNoRows) {
+			logger.Log.Errorf("user token not found, %s", utErr.Error())
+			return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+		}
+	}
+
+	// check if expired
+	if userToken.ExpiresAt.Before(time.Now()) {
+		logger.Log.Errorf("refresh token is expired")
+		return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+	}
+
+	// create tokens
+	accessToken, tokenErr := IssueAuthTokens(c, userToken.UserID)
+	if tokenErr != nil {
+		logger.Log.Errorf(
+			"failed to issue auth tokens for user id: %s, %s",
+			userToken.UserID.String(),
+			tokenErr.Error(),
+		)
+		return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+	}
+
+	return dto.TokenResponse{
+		AccessToken: accessToken,
+	}, http.StatusAccepted, nil
 }

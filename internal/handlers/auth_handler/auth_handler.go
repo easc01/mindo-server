@@ -1,9 +1,13 @@
 package authhandler
 
 import (
+	"net/http"
+
 	authservice "github.com/easc01/mindo-server/internal/services/auth_service"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/dto"
+	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/constant"
 	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
@@ -17,6 +21,7 @@ func RegisterAuth(rg *gin.RouterGroup) {
 		authRg.POST(route.Google, googleAuthHandler)
 		authRg.POST(route.Admin, adminSignUpHandler)
 		authRg.POST(route.Admin+"/sign-in", adminSignInHandler)
+		authRg.POST(route.Refresh, refreshTokenHandler)
 	}
 }
 
@@ -53,7 +58,7 @@ func adminSignUpHandler(c *gin.Context) {
 
 	if userErr != nil {
 		httputil.NewErrorResponse(
-			httputil.StatusInternalServerError,
+			http.StatusInternalServerError,
 			message.SomethingWentWrong,
 			userErr.Error(),
 		).Send(c)
@@ -61,7 +66,7 @@ func adminSignUpHandler(c *gin.Context) {
 	}
 
 	httputil.NewResponse(
-		httputil.StatusCreated,
+		http.StatusCreated,
 		user,
 	).Send(c)
 }
@@ -86,5 +91,32 @@ func adminSignInHandler(c *gin.Context) {
 	httputil.NewResponse(
 		statusCode,
 		user,
+	).Send(c)
+}
+
+func refreshTokenHandler(c *gin.Context) {
+	refreshToken, err := c.Cookie(constant.RefreshToken)
+	if err != nil {
+		logger.Log.Errorf("%s cookie not found", constant.RefreshToken)
+		httputil.NewErrorResponse(
+			http.StatusUnauthorized,
+			message.SignInAgain,
+			nil,
+		)
+	}
+
+	token, statusCode, err := authservice.RefreshTokenService(c, refreshToken)
+	if err != nil {
+		logger.Log.Errorf("failed to generate access and refresh tokens, %s", err.Error())
+		httputil.NewErrorResponse(
+			statusCode,
+			err.Error(),
+			constant.Blank,
+		).Send(c)
+	}
+
+	httputil.NewResponse(
+		statusCode,
+		token,
 	).Send(c)
 }
