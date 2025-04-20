@@ -35,6 +35,6 @@ func registerRoutes(rg *gin.RouterGroup) {
 	{
 		authhandler.RegisterAuth(apiRg)
 		playlisthandler.RegisterPlaylist(apiRg)
-		userhandler.RegisterUserRoutes(apiRg)
+		userhandler.RegisterAppUserRoutes(apiRg)
 	}
 }

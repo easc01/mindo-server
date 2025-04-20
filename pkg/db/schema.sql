@@ -200,7 +200,7 @@ CREATE TABLE "app_user" (
 CREATE TABLE "admin_user" (
     "user_id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "name" VARCHAR(255),
-    "email" VARCHAR(255),
+    "email" VARCHAR(255) UNIQUE,
     "password_hash" TEXT,
     "last_login_at" timestamp,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,

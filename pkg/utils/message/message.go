@@ -7,4 +7,5 @@ const (
 	InvalidRequestBody = "invalid request body"
 	AuthHeaderRequired = "authorization header is required"
 	ProvideAuthHeader  = "provide authorization header"
+	IncorrectPassword  = "password is incorrect"
 )

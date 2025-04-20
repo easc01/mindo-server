@@ -12,16 +12,16 @@ import (
 	"github.com/google/uuid"
 )
 
-func RegisterUserRoutes(rg *gin.RouterGroup) {
-	userRg := rg.Group(route.User, middleware.AuthMiddleware())
+func RegisterAdminUserRoutes(rg *gin.RouterGroup) {
+	userRg := rg.Group(route.Admin, middleware.AuthMiddleware())
 
 	{
-		userRg.GET(constant.IdParam, getUserByID)
+		userRg.GET(constant.IdParam, getAdminUserByID)
 	}
 
 }
 
-func getUserByID(c *gin.Context) {
+func getAdminUserByID(c *gin.Context) {
 	paramId := c.Param("id")
 
 	parsedId, parseErr := uuid.Parse(paramId)

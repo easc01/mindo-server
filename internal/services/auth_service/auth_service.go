@@ -44,7 +44,7 @@ func GoogleAuthService(
 	}
 
 	// Check if appUser exists by oauthclientId and update last login
-	appUser, appUserErr := db.Queries.UpdateUserLastLoginAtByOAuthClientID(
+	appUser, appUserErr := db.Queries.UpdateAppUserLastLoginAtByOAuthClientID(
 		c,
 		util.GetSQLNullString(appUserParams.OauthClientID),
 	)
