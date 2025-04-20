@@ -3,11 +3,15 @@ package userservice
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/easc01/mindo-server/internal/models"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/google/uuid"
 )
@@ -49,7 +53,7 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 		Username:      util.GetSQLNullString(newUserData.Username),
 		Email:         util.GetSQLNullString(newUserData.Email),
 		Mobile:        util.GetSQLNullString(newUserData.Mobile),
-		PasswordHash:  sql.NullString{String: "", Valid: false},
+		PasswordHash:  sql.NullString{String: constant.Blank, Valid: false},
 
 		UpdatedBy: uuid.NullUUID{
 			UUID:  newUserID,
@@ -94,17 +98,19 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 	}, nil
 }
 
-func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, error) {
+func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 	appUser, appUserErr := db.Queries.GetAppUserByUserID(context.Background(), id)
 
 	if appUserErr != nil {
 		if appUserErr == sql.ErrNoRows {
 			logger.Log.Errorf("user of ID %s not found, %s", id, appUserErr)
-			return dto.AppUserDataDTO{}, appUserErr
+			return dto.AppUserDataDTO{}, http.StatusNotFound, fmt.Errorf(message.UserNotFound)
 		}
 
 		logger.Log.Errorf("failed to get user of ID %s, %s", id, appUserErr)
-		return dto.AppUserDataDTO{}, appUserErr
+		return dto.AppUserDataDTO{}, http.StatusInternalServerError, fmt.Errorf(
+			message.SomethingWentWrong,
+		)
 	}
 
 	return dto.AppUserDataDTO{
@@ -121,5 +127,5 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, error) {
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          models.UserTypeAppUser,
-	}, nil
+	}, http.StatusFound, nil
 }

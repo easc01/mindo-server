@@ -1,9 +1,6 @@
 package userhandler
 
 import (
-	"database/sql"
-	"fmt"
-
 	"github.com/easc01/mindo-server/internal/middleware"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/logger"
@@ -37,22 +34,12 @@ func getUserByID(c *gin.Context) {
 		return
 	}
 
-	user, userErr := userservice.GetAppUserByUserID(parsedId)
+	user, statusCode, userErr := userservice.GetAppUserByUserID(parsedId)
 
 	if userErr != nil {
-		if userErr == sql.ErrNoRows {
-			logger.Log.Errorf("user %s not found, %s", parsedId, userErr)
-			http.NewErrorResponse(
-				http.StatusNotFound,
-				fmt.Sprintf("User of %s ID not found", parsedId),
-				userErr.Error(),
-			).Send(c)
-			return
-		}
-
 		logger.Log.Errorf("failed to get user %s userID: %s", userErr, parsedId)
 		http.NewErrorResponse(
-			http.StatusInternalServerError,
+			statusCode,
 			message.SomethingWentWrong,
 			userErr.Error(),
 		).Send(c)

@@ -1,10 +1,10 @@
 package message
 
 const (
-	InvalidUserID      = "UserId is invalid"
-	UserNotFound       = "User not found"
-	SomethingWentWrong = "Something went wrong"
-	InvalidRequestBody = "Invalid request body"
-	AuthHeaderRequired = "Authorization header is required"
-	ProvideAuthHeader  = "Provide authorization header"
+	InvalidUserID      = "userId is invalid"
+	UserNotFound       = "user not found"
+	SomethingWentWrong = "something went wrong"
+	InvalidRequestBody = "invalid request body"
+	AuthHeaderRequired = "authorization header is required"
+	ProvideAuthHeader  = "provide authorization header"
 )
