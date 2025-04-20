@@ -10,6 +10,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/utils/encrypt"
 	"github.com/easc01/mindo-server/pkg/utils/http"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
@@ -101,6 +102,12 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 func CreateNewAdminUser(newUserData dto.NewAdminUserParams) (dto.AdminUserDataDTO, error) {
 	userCreationContext := context.Background()
 
+	hashPwd, hashErr := encrypt.HashPassword(newUserData.Password)
+	if hashErr != nil {
+		logger.Log.Errorf("failed to hash password, %s", hashErr)
+		return dto.AdminUserDataDTO{}, hashErr
+	}
+
 	tx, err := db.DB.BeginTx(userCreationContext, nil)
 	if err != nil {
 		logger.Log.Errorf("failed to init a transaction, %s", err)
@@ -134,7 +141,7 @@ func CreateNewAdminUser(newUserData dto.NewAdminUserParams) (dto.AdminUserDataDT
 			UserID:       newUserID,
 			Name:         util.GetSQLNullString(newUserData.Name),
 			Email:        util.GetSQLNullString(newUserData.Email),
-			PasswordHash: sql.NullString{String: constant.Blank, Valid: false},
+			PasswordHash: util.GetSQLNullString(hashPwd),
 			UpdatedBy: uuid.NullUUID{
 				UUID:  newUserID,
 				Valid: true,
