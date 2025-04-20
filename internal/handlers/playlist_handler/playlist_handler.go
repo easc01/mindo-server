@@ -1,11 +1,11 @@
 package playlisthandler
 
 import (
+	"github.com/easc01/mindo-server/internal/middleware"
+	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
-	"github.com/ishantSikdar/mindo-server/internal/middleware"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/route"
 )
 
 func RegisterPlaylist(rg *gin.RouterGroup) {

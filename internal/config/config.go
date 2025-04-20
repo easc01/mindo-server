@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/joho/godotenv"
 )
 

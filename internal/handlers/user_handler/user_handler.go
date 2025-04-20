@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/easc01/mindo-server/internal/middleware"
+	userservice "github.com/easc01/mindo-server/internal/services/user_service"
+	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/message"
+	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/ishantSikdar/mindo-server/internal/middleware"
-	userservice "github.com/ishantSikdar/mindo-server/internal/services/user_service"
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/message"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/route"
 )
 
 func RegisterUserRoutes(rg *gin.RouterGroup) {

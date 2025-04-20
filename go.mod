@@ -1,4 +1,4 @@
-module github.com/ishantSikdar/mindo-server
+module github.com/easc01/mindo-server
 
 go 1.24.2
 

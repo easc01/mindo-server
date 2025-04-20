@@ -1,12 +1,12 @@
 package authhandler
 
 import (
+	authservice "github.com/easc01/mindo-server/internal/services/auth_service"
+	"github.com/easc01/mindo-server/pkg/dto"
+	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/message"
+	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
-	authservice "github.com/ishantSikdar/mindo-server/internal/services/auth_service"
-	"github.com/ishantSikdar/mindo-server/pkg/dto"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/message"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/route"
 )
 
 func RegisterAuth(rg *gin.RouterGroup) {

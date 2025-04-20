@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ishantSikdar/mindo-server/internal/handlers"
-	"github.com/ishantSikdar/mindo-server/pkg/db"
+	"github.com/easc01/mindo-server/internal/handlers"
+	"github.com/easc01/mindo-server/pkg/db"
 )
 
 func main() {

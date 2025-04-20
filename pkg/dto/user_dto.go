@@ -3,8 +3,8 @@ package dto
 import (
 	"time"
 
+	"github.com/easc01/mindo-server/internal/models"
 	"github.com/google/uuid"
-	"github.com/ishantSikdar/mindo-server/internal/models"
 )
 
 type GoogleLoginRequest struct {

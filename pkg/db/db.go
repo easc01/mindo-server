@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/ishantSikdar/mindo-server/internal/config"
-	"github.com/ishantSikdar/mindo-server/internal/models"
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/internal/config"
+	"github.com/easc01/mindo-server/internal/models"
+	"github.com/easc01/mindo-server/pkg/logger"
 	_ "github.com/lib/pq"
 )
 

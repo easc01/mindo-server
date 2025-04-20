@@ -1,9 +1,9 @@
 package http
 
 import (
+	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/gin-gonic/gin"
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/message"
 )
 
 func GetRequestBody[T any](c *gin.Context) (T, bool) {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/easc01/mindo-server/pkg/utils/constant"
 	"github.com/google/uuid"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
 )
 
 var adjectives = []string{

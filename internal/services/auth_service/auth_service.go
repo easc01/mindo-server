@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/easc01/mindo-server/internal/config"
+	"github.com/easc01/mindo-server/internal/models"
+	userservice "github.com/easc01/mindo-server/internal/services/user_service"
+	"github.com/easc01/mindo-server/pkg/db"
+	"github.com/easc01/mindo-server/pkg/dto"
+	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
-	"github.com/ishantSikdar/mindo-server/internal/config"
-	"github.com/ishantSikdar/mindo-server/internal/models"
-	userservice "github.com/ishantSikdar/mindo-server/internal/services/user_service"
-	"github.com/ishantSikdar/mindo-server/pkg/db"
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/dto"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/util"
 	"google.golang.org/api/idtoken"
 )
 

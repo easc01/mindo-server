@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/easc01/mindo-server/internal/models"
+	"github.com/easc01/mindo-server/pkg/db"
+	"github.com/easc01/mindo-server/pkg/dto"
+	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/google/uuid"
-	"github.com/ishantSikdar/mindo-server/internal/models"
-	"github.com/ishantSikdar/mindo-server/pkg/db"
-	"github.com/ishantSikdar/mindo-server/pkg/dto"
-	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/utils/util"
 )
 
 func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, error) {
