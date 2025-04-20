@@ -8,8 +8,8 @@ import (
 )
 
 type GoogleLoginRequest struct {
-	IDToken     string `json:"idToken"`
-	AccessToken string `json:"accessToken"`
+	IDToken     string `json:"idToken"     binding:"required"`
+	AccessToken string `json:"accessToken" binding:"required"`
 }
 
 type AppUserDataDTO struct {

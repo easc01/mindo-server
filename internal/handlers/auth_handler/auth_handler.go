@@ -19,24 +19,23 @@ func RegisterAuth(rg *gin.RouterGroup) {
 
 func googleAuthHandler(c *gin.Context) {
 	req, ok := http.GetRequestBody[dto.GoogleLoginRequest](c)
-
 	if !ok {
 		return
 	}
 
-	user, userErr := authservice.GoogleAuthService(c, &req)
+	user, statusCode, userErr := authservice.GoogleAuthService(c, &req)
 
 	if userErr != nil {
 		http.NewErrorResponse(
-			http.StatusInternalServerError,
+			statusCode,
 			message.SomethingWentWrong,
-			userErr,
+			userErr.Error(),
 		).Send(c)
 		return
 	}
 
 	http.NewResponse(
-		http.StatusCreated,
+		statusCode,
 		user,
 	).Send(c)
 }

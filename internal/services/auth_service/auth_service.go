@@ -11,6 +11,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/utils/http"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/idtoken"
@@ -19,7 +20,7 @@ import (
 func GoogleAuthService(
 	c *gin.Context,
 	googleReq *dto.GoogleLoginRequest,
-) (dto.AppUserDataDTO, error) {
+) (dto.AppUserDataDTO, int, error) {
 
 	payload, payloadErr := idtoken.Validate(c, googleReq.IDToken, config.GetConfig().GoogleClientId)
 	if payloadErr != nil {
@@ -28,7 +29,7 @@ func GoogleAuthService(
 			payloadErr,
 			googleReq.IDToken,
 		)
-		return dto.AppUserDataDTO{}, payloadErr
+		return dto.AppUserDataDTO{}, http.StatusBadRequest, payloadErr
 	}
 
 	name, _ := payload.Claims["name"].(string)
@@ -59,11 +60,11 @@ func GoogleAuthService(
 					appUserParams.Email,
 					appUserParams.OauthClientID,
 				)
-				return dto.AppUserDataDTO{}, newAppUserErr
+				return dto.AppUserDataDTO{}, http.StatusInternalServerError, newAppUserErr
 			}
 
 			logger.Log.Infof("new app user created %s", newAppUser.UserID)
-			return newAppUser, nil
+			return newAppUser, http.StatusCreated, nil
 		}
 
 		// Log unexpected DB errors
@@ -72,7 +73,7 @@ func GoogleAuthService(
 			appUserErr,
 			appUserParams.OauthClientID,
 		)
-		return dto.AppUserDataDTO{}, appUserErr
+		return dto.AppUserDataDTO{}, http.StatusInternalServerError, appUserErr
 	}
 
 	return dto.AppUserDataDTO{
@@ -89,5 +90,5 @@ func GoogleAuthService(
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          models.UserTypeAppUser,
-	}, nil
+	}, http.StatusFound, nil
 }

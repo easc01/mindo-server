@@ -10,10 +10,11 @@ func GetRequestBody[T any](c *gin.Context) (T, bool) {
 	var reqBody T
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		logger.Log.Error(message.InvalidRequestBody)
+
 		NewErrorResponse(
 			StatusBadRequest,
 			message.InvalidRequestBody,
-			nil,
+			err.Error(),
 		).Send(c)
 		c.Abort()
 		return reqBody, false

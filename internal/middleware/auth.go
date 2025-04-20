@@ -42,7 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			http.NewErrorResponse(
 				http.StatusUnauthorized,
 				fmt.Sprintf("Invalid auth token, %s", payloadErr.Error()),
-				payloadErr,
+				payloadErr.Error(),
 			).Send(c)
 			c.Abort()
 			return
@@ -57,13 +57,13 @@ func AuthMiddleware() gin.HandlerFunc {
 				http.NewErrorResponse(
 					http.StatusNotFound,
 					message.UserNotFound,
-					appUserErr,
+					appUserErr.Error(),
 				).Send(c)
 			} else {
 				http.NewErrorResponse(
 					http.StatusInternalServerError,
 					message.SomethingWentWrong,
-					appUserErr,
+					appUserErr.Error(),
 				).Send(c)
 			}
 			logger.Log.Errorf(

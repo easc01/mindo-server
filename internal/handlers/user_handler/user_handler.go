@@ -32,7 +32,7 @@ func getUserByID(c *gin.Context) {
 		http.NewErrorResponse(
 			http.StatusBadRequest,
 			message.InvalidUserID,
-			parseErr,
+			parseErr.Error(),
 		).Send(c)
 		return
 	}
@@ -45,7 +45,7 @@ func getUserByID(c *gin.Context) {
 			http.NewErrorResponse(
 				http.StatusNotFound,
 				fmt.Sprintf("User of %s ID not found", parsedId),
-				userErr,
+				userErr.Error(),
 			).Send(c)
 			return
 		}
@@ -54,7 +54,7 @@ func getUserByID(c *gin.Context) {
 		http.NewErrorResponse(
 			http.StatusInternalServerError,
 			message.SomethingWentWrong,
-			userErr,
+			userErr.Error(),
 		).Send(c)
 		return
 	}
