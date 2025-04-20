@@ -19,8 +19,6 @@ func RegisterAuth(rg *gin.RouterGroup) {
 
 	{
 		authRg.POST(route.Google, googleAuthHandler)
-		authRg.POST(route.Admin, adminSignUpHandler)
-		authRg.POST(route.Admin+"/sign-in", adminSignInHandler)
 		authRg.POST(route.Refresh, refreshTokenHandler)
 	}
 }
@@ -31,53 +29,7 @@ func googleAuthHandler(c *gin.Context) {
 		return
 	}
 
-	user, statusCode, userErr := authservice.GoogleAuthService(c, &req)
-
-	if userErr != nil {
-		httputil.NewErrorResponse(
-			statusCode,
-			message.SomethingWentWrong,
-			userErr.Error(),
-		).Send(c)
-		return
-	}
-
-	httputil.NewResponse(
-		statusCode,
-		user,
-	).Send(c)
-}
-
-func adminSignUpHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.NewAdminUserParams](c)
-	if !ok {
-		return
-	}
-
-	user, userErr := userservice.CreateNewAdminUser(&req)
-
-	if userErr != nil {
-		httputil.NewErrorResponse(
-			http.StatusInternalServerError,
-			message.SomethingWentWrong,
-			userErr.Error(),
-		).Send(c)
-		return
-	}
-
-	httputil.NewResponse(
-		http.StatusCreated,
-		user,
-	).Send(c)
-}
-
-func adminSignInHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.AdminSignInParams](c)
-	if !ok {
-		return
-	}
-
-	user, statusCode, userErr := userservice.AdminSignIn(c, &req)
+	user, statusCode, userErr := userservice.GoogleAuthService(c, &req)
 
 	if userErr != nil {
 		httputil.NewErrorResponse(

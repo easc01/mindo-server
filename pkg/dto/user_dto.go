@@ -30,6 +30,7 @@ type AppUserDataDTO struct {
 }
 
 type AdminUserDataDTO struct {
+	AccessToken string          `json:"accessToken"`
 	UserID      uuid.UUID       `json:"userId"`
 	UserType    models.UserType `json:"userType"`
 	Name        string          `json:"name"`

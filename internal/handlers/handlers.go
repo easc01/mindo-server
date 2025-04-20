@@ -34,5 +34,6 @@ func registerRoutes(rg *gin.RouterGroup) {
 	{
 		authhandler.RegisterAuth(apiRg)
 		userhandler.RegisterAppUserRoutes(apiRg)
+		userhandler.RegisterAdminUserRoutes(apiRg)
 	}
 }

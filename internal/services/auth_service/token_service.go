@@ -1,23 +1,30 @@
 package authservice
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/easc01/mindo-server/internal/config"
 	"github.com/easc01/mindo-server/internal/models"
+	"github.com/easc01/mindo-server/pkg/db"
+	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-func IssueAuthTokens(c *gin.Context, userId uuid.UUID) (string, error) {
+func IssueAuthTokens(c *gin.Context, userId uuid.UUID, role models.UserType) (string, error) {
 
 	accessToken, atErr := CreateAccessToken(
 		uuid.New().String(),
 		userId.String(),
-		models.UserTypeAppUser,
+		role,
 	)
 
 	if atErr != nil {
@@ -50,4 +57,36 @@ func IssueAuthTokens(c *gin.Context, userId uuid.UUID) (string, error) {
 	})
 
 	return accessToken, nil
+}
+
+func RefreshTokenService(c *gin.Context, refreshToken string) (dto.TokenResponse, int, error) {
+	// find refresh token
+	userToken, utErr := db.Queries.GetUserTokenByRefreshToken(c, refreshToken)
+	if utErr != nil {
+		if errors.Is(utErr, sql.ErrNoRows) {
+			logger.Log.Errorf("user token not found, %s", utErr.Error())
+			return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+		}
+	}
+
+	// check if expired
+	if userToken.ExpiresAt.Before(time.Now()) {
+		logger.Log.Errorf("refresh token is expired")
+		return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+	}
+
+	// create tokens
+	accessToken, tokenErr := IssueAuthTokens(c, userToken.UserID, models.UserTypeAppUser)
+	if tokenErr != nil {
+		logger.Log.Errorf(
+			"failed to issue auth tokens for user id: %s, %s",
+			userToken.UserID.String(),
+			tokenErr.Error(),
+		)
+		return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+	}
+
+	return dto.TokenResponse{
+		AccessToken: accessToken,
+	}, http.StatusAccepted, nil
 }

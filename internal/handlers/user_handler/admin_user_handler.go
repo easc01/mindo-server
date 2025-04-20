@@ -5,41 +5,55 @@ import (
 
 	"github.com/easc01/mindo-server/internal/middleware"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
-	"github.com/easc01/mindo-server/pkg/logger"
-	"github.com/easc01/mindo-server/pkg/utils/constant"
+	"github.com/easc01/mindo-server/pkg/dto"
 	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func RegisterAdminUserRoutes(rg *gin.RouterGroup) {
-	userRg := rg.Group(route.Admin, middleware.AuthMiddleware())
+	adminRg := rg.Group(route.Admin, middleware.AuthMiddleware())
 
 	{
-		userRg.GET(constant.IdParam, getAdminUserByID)
+		adminRg.POST(route.Admin, adminSignUpHandler)
+		adminRg.POST(route.Admin+"/sign-in", adminSignInHandler)
 	}
 
 }
 
-func getAdminUserByID(c *gin.Context) {
-	paramId := c.Param("id")
+func adminSignUpHandler(c *gin.Context) {
+	req, ok := httputil.GetRequestBody[dto.NewAdminUserParams](c)
+	if !ok {
+		return
+	}
 
-	parsedId, parseErr := uuid.Parse(paramId)
-	if parseErr != nil {
+	user, userErr := userservice.CreateNewAdminUser(&req)
+
+	if userErr != nil {
 		httputil.NewErrorResponse(
-			http.StatusBadRequest,
-			message.InvalidUserID,
-			parseErr.Error(),
+			http.StatusInternalServerError,
+			message.SomethingWentWrong,
+			userErr.Error(),
 		).Send(c)
 		return
 	}
 
-	user, statusCode, userErr := userservice.GetAppUserByUserID(parsedId)
+	httputil.NewResponse(
+		http.StatusCreated,
+		user,
+	).Send(c)
+}
+
+func adminSignInHandler(c *gin.Context) {
+	req, ok := httputil.GetRequestBody[dto.AdminSignInParams](c)
+	if !ok {
+		return
+	}
+
+	user, statusCode, userErr := userservice.AdminSignIn(c, &req)
 
 	if userErr != nil {
-		logger.Log.Errorf("failed to get user %s userID: %s", userErr, parsedId)
 		httputil.NewErrorResponse(
 			statusCode,
 			message.SomethingWentWrong,
@@ -49,7 +63,7 @@ func getAdminUserByID(c *gin.Context) {
 	}
 
 	httputil.NewResponse(
-		http.StatusFound,
+		statusCode,
 		user,
 	).Send(c)
 }

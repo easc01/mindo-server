@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/easc01/mindo-server/internal/models"
+	authservice "github.com/easc01/mindo-server/internal/services/auth_service"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
@@ -141,9 +142,25 @@ func AdminSignIn(
 		)
 	}
 
+	// issue tokens
+	accessToken, tokenErr := authservice.IssueAuthTokens(
+		c,
+		adminUser.UserID,
+		models.UserTypeAdminUser,
+	)
+	if tokenErr != nil {
+		logger.Log.Errorf(
+			"failed to issue auth tokens for user id: %s, %s",
+			adminUser.UserID.String(),
+			tokenErr.Error(),
+		)
+		return dto.AdminUserDataDTO{}, http.StatusInternalServerError, tokenErr
+	}
+
 	go db.Queries.UpdateAdminUserLastLoginByUserId(c, adminUser.UserID)
 
 	return dto.AdminUserDataDTO{
+		AccessToken: accessToken,
 		UserID:      adminUser.UserID,
 		UserType:    adminUser.UserType.UserType,
 		Name:        adminUser.Name.String,
