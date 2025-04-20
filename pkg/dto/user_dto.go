@@ -13,6 +13,7 @@ type GoogleLoginRequest struct {
 }
 
 type AppUserDataDTO struct {
+	AccessToken       string          `json:"accessToken"`
 	UserID            uuid.UUID       `json:"userId"`
 	UserType          models.UserType `json:"userType"`
 	Username          string          `json:"username"`

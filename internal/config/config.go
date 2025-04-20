@@ -17,7 +17,15 @@ func init() {
 	}
 }
 
+type Environment string
+
+const (
+	Development Environment = "dev"
+	Production  Environment = "prod"
+)
+
 type Config struct {
+	Env                Environment
 	ApiBaseUrl         string
 	DbHost             string
 	DbPort             string
@@ -32,6 +40,7 @@ type Config struct {
 
 func GetConfig() *Config {
 	return &Config{
+		Env:                Environment(getEnv("ENV", "dev")),
 		DbHost:             getEnv("DB_HOST", "localhost"),
 		DbPort:             getEnv("DB_PORT", "5432"),
 		DbUser:             getEnv("DB_USER", "postgres"),

@@ -10,7 +10,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/google/uuid"
@@ -104,11 +104,11 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 	if appUserErr != nil {
 		if appUserErr == sql.ErrNoRows {
 			logger.Log.Errorf("user of ID %s not found, %s", id, appUserErr)
-			return dto.AppUserDataDTO{}, http.StatusNotFound, fmt.Errorf(message.UserNotFound)
+			return dto.AppUserDataDTO{}, httputil.StatusNotFound, fmt.Errorf(message.UserNotFound)
 		}
 
 		logger.Log.Errorf("failed to get user of ID %s, %s", id, appUserErr)
-		return dto.AppUserDataDTO{}, http.StatusInternalServerError, fmt.Errorf(
+		return dto.AppUserDataDTO{}, httputil.StatusInternalServerError, fmt.Errorf(
 			message.SomethingWentWrong,
 		)
 	}
@@ -127,5 +127,5 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          models.UserTypeAppUser,
-	}, http.StatusFound, nil
+	}, httputil.StatusFound, nil
 }

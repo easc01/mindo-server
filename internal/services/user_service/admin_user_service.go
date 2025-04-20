@@ -11,7 +11,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/encrypt"
-	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
@@ -117,14 +117,14 @@ func AdminSignIn(
 				adminData.Email,
 				adminUserErr,
 			)
-			return dto.AdminUserDataDTO{}, http.StatusNotFound, fmt.Errorf(
+			return dto.AdminUserDataDTO{}, httputil.StatusNotFound, fmt.Errorf(
 				"admin of email %s not found",
 				adminData.Email,
 			)
 		}
 
 		logger.Log.Infof("failed to fetch admin user %s", adminUserErr)
-		return dto.AdminUserDataDTO{}, http.StatusInternalServerError, adminUserErr
+		return dto.AdminUserDataDTO{}, httputil.StatusInternalServerError, adminUserErr
 	}
 
 	// check the password
@@ -136,7 +136,7 @@ func AdminSignIn(
 			"incorrect password attempt for admin user ID: %s",
 			adminUser.UserID,
 		)
-		return dto.AdminUserDataDTO{}, http.StatusForbidden, fmt.Errorf(
+		return dto.AdminUserDataDTO{}, httputil.StatusForbidden, fmt.Errorf(
 			message.IncorrectPassword,
 		)
 	}
@@ -152,5 +152,5 @@ func AdminSignIn(
 		UpdatedAt:   adminUser.UpdatedAt.Time,
 		CreatedAt:   adminUser.CreatedAt.Time,
 		UpdatedBy:   adminUser.UpdatedBy.UUID,
-	}, http.StatusAccepted, nil
+	}, httputil.StatusAccepted, nil
 }

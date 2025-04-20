@@ -3,17 +3,20 @@ package authservice
 import (
 	"database/sql"
 	"errors"
+	"net/http"
 
 	"github.com/easc01/mindo-server/internal/config"
 	"github.com/easc01/mindo-server/internal/models"
+	jwtservice "github.com/easc01/mindo-server/internal/services/jwt_service"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"google.golang.org/api/idtoken"
 )
 
@@ -76,7 +79,44 @@ func GoogleAuthService(
 		return dto.AppUserDataDTO{}, http.StatusInternalServerError, appUserErr
 	}
 
+	// create tokens
+	accessToken, atErr := jwtservice.CreateAccessToken(
+		uuid.New().String(),
+		appUser.UserID.String(),
+		models.UserTypeAppUser,
+	)
+
+	if atErr != nil {
+		logger.Log.Errorf(
+			"failed to create access token for userId: %s, %s",
+			appUser.UserID,
+			atErr.Error(),
+		)
+		return dto.AppUserDataDTO{}, http.StatusInternalServerError, atErr
+	}
+
+	refreshToken, rtErr := jwtservice.CreateRefreshTokenByUserId(appUser.UserID)
+	if rtErr != nil {
+		logger.Log.Errorf(
+			"failed to create refresh token for userId: %s, %s",
+			appUser.UserID,
+			rtErr.Error(),
+		)
+		return dto.AppUserDataDTO{}, http.StatusInternalServerError, rtErr
+	}
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     constant.RefreshToken,
+		Value:    refreshToken.RefreshToken,
+		HttpOnly: true,
+		Secure:   config.GetConfig().Env == config.Production,
+		Path:     route.GetRefreshRoute(),
+		SameSite: http.SameSiteStrictMode,
+		MaxAge:   int(constant.Month),
+	})
+
 	return dto.AppUserDataDTO{
+		AccessToken:       accessToken,
 		UserID:            appUser.UserID,
 		Username:          appUser.Username.String,
 		ProfilePictureUrl: appUser.ProfilePictureUrl.String,

@@ -1,4 +1,4 @@
-package http
+package httputil
 
 import (
 	"github.com/easc01/mindo-server/pkg/logger"

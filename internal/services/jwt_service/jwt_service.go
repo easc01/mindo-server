@@ -1,4 +1,4 @@
-package util
+package jwtservice
 
 import (
 	"context"
@@ -51,7 +51,7 @@ func CreateRefreshTokenByUserId(userId uuid.UUID) (models.UserToken, error) {
 	userTokenParams := models.UpsertUserTokenParams{
 		UserID:       userId,
 		RefreshToken: refreshToken,
-		ExpiresAt:    time.Now().Add(time.Hour * 24),
+		ExpiresAt:    time.Now().Add(constant.Month),
 		UpdatedBy:    uuid.NullUUID{UUID: userId, Valid: true},
 	}
 

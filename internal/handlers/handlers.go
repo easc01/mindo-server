@@ -2,7 +2,6 @@ package handlers
 
 import (
 	authhandler "github.com/easc01/mindo-server/internal/handlers/auth_handler"
-	playlisthandler "github.com/easc01/mindo-server/internal/handlers/playlist_handler"
 	userhandler "github.com/easc01/mindo-server/internal/handlers/user_handler"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/route"
@@ -34,7 +33,6 @@ func registerRoutes(rg *gin.RouterGroup) {
 
 	{
 		authhandler.RegisterAuth(apiRg)
-		playlisthandler.RegisterPlaylist(apiRg)
 		userhandler.RegisterAppUserRoutes(apiRg)
 	}
 }

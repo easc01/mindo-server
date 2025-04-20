@@ -11,7 +11,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
@@ -27,8 +27,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		token := c.GetHeader(constant.Authorization)
 
 		if token == "" {
-			http.NewErrorResponse(
-				http.StatusUnauthorized,
+			httputil.NewErrorResponse(
+				httputil.StatusUnauthorized,
 				message.AuthHeaderRequired,
 				message.ProvideAuthHeader,
 			).Send(c)
@@ -39,8 +39,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		payload, payloadErr := idtoken.Validate(c, token, config.GetConfig().GoogleClientId)
 		if payloadErr != nil {
 			logger.Log.Errorf("invalid auth token %s", payloadErr)
-			http.NewErrorResponse(
-				http.StatusUnauthorized,
+			httputil.NewErrorResponse(
+				httputil.StatusUnauthorized,
 				fmt.Sprintf("Invalid auth token, %s", payloadErr.Error()),
 				payloadErr.Error(),
 			).Send(c)
@@ -54,14 +54,14 @@ func AuthMiddleware() gin.HandlerFunc {
 		)
 		if appUserErr != nil {
 			if errors.Is(appUserErr, sql.ErrNoRows) {
-				http.NewErrorResponse(
-					http.StatusNotFound,
+				httputil.NewErrorResponse(
+					httputil.StatusNotFound,
 					message.UserNotFound,
 					appUserErr.Error(),
 				).Send(c)
 			} else {
-				http.NewErrorResponse(
-					http.StatusInternalServerError,
+				httputil.NewErrorResponse(
+					httputil.StatusInternalServerError,
 					message.SomethingWentWrong,
 					appUserErr.Error(),
 				).Send(c)

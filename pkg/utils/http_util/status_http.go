@@ -1,4 +1,4 @@
-package http
+package httputil
 
 // HTTP status codes as registered with IANA.
 // See: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml

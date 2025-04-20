@@ -5,7 +5,7 @@ import (
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/http"
+	"github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
@@ -26,8 +26,8 @@ func getAppUserByID(c *gin.Context) {
 
 	parsedId, parseErr := uuid.Parse(paramId)
 	if parseErr != nil {
-		http.NewErrorResponse(
-			http.StatusBadRequest,
+		httputil.NewErrorResponse(
+			httputil.StatusBadRequest,
 			message.InvalidUserID,
 			parseErr.Error(),
 		).Send(c)
@@ -38,7 +38,7 @@ func getAppUserByID(c *gin.Context) {
 
 	if userErr != nil {
 		logger.Log.Errorf("failed to get user %s userID: %s", userErr, parsedId)
-		http.NewErrorResponse(
+		httputil.NewErrorResponse(
 			statusCode,
 			message.SomethingWentWrong,
 			userErr.Error(),
@@ -46,8 +46,8 @@ func getAppUserByID(c *gin.Context) {
 		return
 	}
 
-	http.NewResponse(
-		http.StatusFound,
+	httputil.NewResponse(
+		httputil.StatusFound,
 		user,
 	).Send(c)
 }
