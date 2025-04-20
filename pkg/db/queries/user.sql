@@ -21,6 +21,23 @@ VALUES (
         $8 -- Updated By
     ) RETURNING *;
 
+-- name: CreateNewAdminUser :one
+INSERT INTO
+    admin_user (
+        user_id,
+        name,
+        email,
+        password_hash,
+        updated_by
+    )
+VALUES (
+        $1, -- id
+        $2, -- Name
+        $3, -- Email
+        $4, -- Password Hash
+        $5  -- Updated By
+    ) RETURNING *;
+
 -- name: CreateNewUser :one
 INSERT INTO
     "user" (id, user_type, updated_by)

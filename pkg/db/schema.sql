@@ -158,7 +158,7 @@ CREATE TABLE "joined_community" (
 );
 
 -- User Table (with Enum)
-CREATE TYPE user_type AS ENUM ('app_user', 'admin');
+CREATE TYPE user_type AS ENUM ('app_user', 'admin_user');
 
 CREATE TABLE "user" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,

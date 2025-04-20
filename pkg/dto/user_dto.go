@@ -28,10 +28,27 @@ type AppUserDataDTO struct {
 	UpdatedBy         uuid.UUID       `json:"updatedBy"`
 }
 
+type AdminUserDataDTO struct {
+	UserID      uuid.UUID       `json:"userId"`
+	UserType    models.UserType `json:"userType"`
+	Name        string          `json:"name"`
+	Email       string          `json:"email"`
+	LastLoginAt time.Time       `json:"lastLoginAt"`
+	UpdatedAt   time.Time       `json:"updatedAt"`
+	CreatedAt   time.Time       `json:"createdAt"`
+	UpdatedBy   uuid.UUID       `json:"updatedBy"`
+}
+
 type NewAppUserParams struct {
 	Name          string
 	Username      string
 	Email         string
 	Mobile        string
 	OauthClientID string
+}
+
+type NewAdminUserParams struct {
+	Name     string
+	Email    string
+	Password string
 }

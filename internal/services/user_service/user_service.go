@@ -98,6 +98,82 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 	}, nil
 }
 
+func CreateNewAdminUser(newUserData dto.NewAdminUserParams) (dto.AdminUserDataDTO, error) {
+	userCreationContext := context.Background()
+
+	tx, err := db.DB.BeginTx(userCreationContext, nil)
+	if err != nil {
+		logger.Log.Errorf("failed to init a transaction, %s", err)
+		return dto.AdminUserDataDTO{}, err
+	}
+
+	qtx := db.Queries.WithTx(tx)
+	newUserID := uuid.New()
+
+	user, userErr := qtx.CreateNewUser(userCreationContext, models.CreateNewUserParams{
+		ID: newUserID,
+		UserType: models.NullUserType{
+			UserType: models.UserTypeAdminUser,
+			Valid:    true,
+		},
+		UpdatedBy: uuid.NullUUID{
+			UUID:  newUserID,
+			Valid: true,
+		},
+	})
+
+	if userErr != nil {
+		tx.Rollback()
+		logger.Log.Errorf("failed to create new user of user_id %s, due to %s", newUserID, userErr)
+		return dto.AdminUserDataDTO{}, userErr
+	}
+
+	adminUser, adminUserErr := qtx.CreateNewAdminUser(
+		userCreationContext,
+		models.CreateNewAdminUserParams{
+			UserID:       newUserID,
+			Name:         util.GetSQLNullString(newUserData.Name),
+			Email:        util.GetSQLNullString(newUserData.Email),
+			PasswordHash: sql.NullString{String: constant.Blank, Valid: false},
+			UpdatedBy: uuid.NullUUID{
+				UUID:  newUserID,
+				Valid: true,
+			},
+		},
+	)
+
+	if adminUserErr != nil {
+		tx.Rollback()
+		logger.Log.Errorf(
+			"failed to create new admin_user and user of user_id %s, due to %s",
+			newUserID,
+			adminUserErr,
+		)
+		return dto.AdminUserDataDTO{}, adminUserErr
+	}
+
+	txErr := tx.Commit()
+	if txErr != nil {
+		logger.Log.Errorf(
+			"failed to create new admin_user and user of user_id %s, due to %s",
+			newUserID,
+			txErr,
+		)
+		return dto.AdminUserDataDTO{}, userErr
+	}
+
+	return dto.AdminUserDataDTO{
+		UserID:      adminUser.UserID,
+		Name:        adminUser.Name.String,
+		Email:       adminUser.Email.String,
+		LastLoginAt: adminUser.LastLoginAt.Time,
+		UpdatedAt:   adminUser.UpdatedAt.Time,
+		CreatedAt:   adminUser.CreatedAt.Time,
+		UpdatedBy:   adminUser.UpdatedBy.UUID,
+		UserType:    user.UserType.UserType,
+	}, nil
+}
+
 func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 	appUser, appUserErr := db.Queries.GetAppUserByUserID(context.Background(), id)
 

@@ -15,8 +15,8 @@ import (
 type UserType string
 
 const (
-	UserTypeAppUser UserType = "app_user"
-	UserTypeAdmin   UserType = "admin"
+	UserTypeAppUser   UserType = "app_user"
+	UserTypeAdminUser UserType = "admin_user"
 )
 
 func (e *UserType) Scan(src interface{}) error {

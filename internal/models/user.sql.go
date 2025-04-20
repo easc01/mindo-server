@@ -12,6 +12,54 @@ import (
 	"github.com/google/uuid"
 )
 
+const createNewAdminUser = `-- name: CreateNewAdminUser :one
+INSERT INTO
+    admin_user (
+        user_id,
+        name,
+        email,
+        password_hash,
+        updated_by
+    )
+VALUES (
+        $1, -- id
+        $2, -- Name
+        $3, -- Email
+        $4, -- Password Hash
+        $5  -- Updated By
+    ) RETURNING user_id, name, email, password_hash, last_login_at, updated_at, created_at, updated_by
+`
+
+type CreateNewAdminUserParams struct {
+	UserID       uuid.UUID
+	Name         sql.NullString
+	Email        sql.NullString
+	PasswordHash sql.NullString
+	UpdatedBy    uuid.NullUUID
+}
+
+func (q *Queries) CreateNewAdminUser(ctx context.Context, arg CreateNewAdminUserParams) (AdminUser, error) {
+	row := q.db.QueryRowContext(ctx, createNewAdminUser,
+		arg.UserID,
+		arg.Name,
+		arg.Email,
+		arg.PasswordHash,
+		arg.UpdatedBy,
+	)
+	var i AdminUser
+	err := row.Scan(
+		&i.UserID,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.LastLoginAt,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+		&i.UpdatedBy,
+	)
+	return i, err
+}
+
 const createNewAppUser = `-- name: CreateNewAppUser :one
 INSERT INTO
     app_user (
