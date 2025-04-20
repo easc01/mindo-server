@@ -4,17 +4,17 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	HttpStatus "net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ishantSikdar/mindo-server/internal/config"
-	"github.com/ishantSikdar/mindo-server/internal/constants"
 	"github.com/ishantSikdar/mindo-server/internal/models"
 	"github.com/ishantSikdar/mindo-server/pkg/db"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/structs"
-	"github.com/ishantSikdar/mindo-server/pkg/utils"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/message"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/util"
 	"google.golang.org/api/idtoken"
 )
 
@@ -24,13 +24,13 @@ const UserContextKey contextKey = "user"
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.GetHeader(utils.Authorization)
+		token := c.GetHeader(constant.Authorization)
 
 		if token == "" {
 			http.NewErrorResponse(
-				HttpStatus.StatusUnauthorized,
-				constants.AuthHeaderRequired,
-				constants.ProvideAuthHeader,
+				http.StatusUnauthorized,
+				message.AuthHeaderRequired,
+				message.ProvideAuthHeader,
 			).Send(c)
 			c.Abort()
 			return
@@ -40,7 +40,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if payloadErr != nil {
 			logger.Log.Errorf("invalid auth token %s", payloadErr)
 			http.NewErrorResponse(
-				HttpStatus.StatusUnauthorized,
+				http.StatusUnauthorized,
 				fmt.Sprintf("Invalid auth token, %s", payloadErr.Error()),
 				payloadErr,
 			).Send(c)
@@ -50,19 +50,19 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		appUser, appUserErr := db.Queries.GetAppUserByClientOAuthID(
 			c.Request.Context(),
-			utils.GetSQLNullString(payload.Subject),
+			util.GetSQLNullString(payload.Subject),
 		)
 		if appUserErr != nil {
 			if errors.Is(appUserErr, sql.ErrNoRows) {
 				http.NewErrorResponse(
-					HttpStatus.StatusNotFound,
-					constants.UserNotFound,
+					http.StatusNotFound,
+					message.UserNotFound,
 					appUserErr,
 				).Send(c)
 			} else {
 				http.NewErrorResponse(
-					HttpStatus.StatusInternalServerError,
-					constants.SomethingWentWrong,
+					http.StatusInternalServerError,
+					message.SomethingWentWrong,
 					appUserErr,
 				).Send(c)
 			}

@@ -1,4 +1,4 @@
-package constants
+package route
 
 const (
 	Api       = "/api"

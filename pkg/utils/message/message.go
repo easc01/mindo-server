@@ -1,4 +1,4 @@
-package constants
+package message
 
 const (
 	InvalidUserID      = "UserId is invalid"

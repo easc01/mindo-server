@@ -3,8 +3,11 @@ package handlers
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/ishantSikdar/mindo-server/internal/constants"
+	authhandler "github.com/ishantSikdar/mindo-server/internal/handlers/auth_handler"
+	playlisthandler "github.com/ishantSikdar/mindo-server/internal/handlers/playlist_handler"
+	userhandler "github.com/ishantSikdar/mindo-server/internal/handlers/user_handler"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/route"
 )
 
 func InitREST() {
@@ -27,11 +30,11 @@ func InitREST() {
 }
 
 func registerRoutes(rg *gin.RouterGroup) {
-	apiRg := rg.Group(constants.Api)
+	apiRg := rg.Group(route.Api)
 
 	{
-		RegisterAuth(apiRg)
-		RegisterPlaylist(apiRg)
-		RegisterUserRoutes(apiRg)
+		authhandler.RegisterAuth(apiRg)
+		playlisthandler.RegisterPlaylist(apiRg)
+		userhandler.RegisterUserRoutes(apiRg)
 	}
 }

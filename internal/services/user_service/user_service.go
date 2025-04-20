@@ -1,4 +1,4 @@
-package services
+package userservice
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/ishantSikdar/mindo-server/pkg/db"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/structs"
-	"github.com/ishantSikdar/mindo-server/pkg/utils"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/util"
 )
 
 func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserDataDTO, error) {
@@ -44,11 +44,11 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 
 	appUser, appUserErr := qtx.CreateNewAppUser(userCreationContext, models.CreateNewAppUserParams{
 		UserID:        newUserID,
-		OauthClientID: utils.GetSQLNullString(newUserData.OauthClientID),
-		Name:          utils.GetSQLNullString(newUserData.Name),
-		Username:      utils.GetSQLNullString(newUserData.Username),
-		Email:         utils.GetSQLNullString(newUserData.Email),
-		Mobile:        utils.GetSQLNullString(newUserData.Mobile),
+		OauthClientID: util.GetSQLNullString(newUserData.OauthClientID),
+		Name:          util.GetSQLNullString(newUserData.Name),
+		Username:      util.GetSQLNullString(newUserData.Username),
+		Email:         util.GetSQLNullString(newUserData.Email),
+		Mobile:        util.GetSQLNullString(newUserData.Mobile),
 		PasswordHash:  sql.NullString{String: "", Valid: false},
 
 		UpdatedBy: uuid.NullUUID{

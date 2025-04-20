@@ -1,28 +1,30 @@
-package services
+package authservice
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 
+	"github.com/gin-gonic/gin"
 	"github.com/ishantSikdar/mindo-server/internal/config"
 	"github.com/ishantSikdar/mindo-server/internal/models"
+	userservice "github.com/ishantSikdar/mindo-server/internal/services/user_service"
 	"github.com/ishantSikdar/mindo-server/pkg/db"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
 	"github.com/ishantSikdar/mindo-server/pkg/structs"
-	"github.com/ishantSikdar/mindo-server/pkg/utils"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/util"
 	"google.golang.org/api/idtoken"
 )
 
 func GoogleAuthService(
-	c context.Context,
-	googleReq structs.GoogleLoginRequest,
+	c *gin.Context,
+	googleReq *structs.GoogleLoginRequest,
 ) (structs.AppUserDataDTO, error) {
 
 	payload, payloadErr := idtoken.Validate(c, googleReq.IDToken, config.GetConfig().GoogleClientId)
 	if payloadErr != nil {
 		logger.Log.Errorf(
-			"invalidate app user token %s for token %s",
+			"invalid app user token, %s, for token %s",
 			payloadErr,
 			googleReq.IDToken,
 		)
@@ -36,20 +38,20 @@ func GoogleAuthService(
 		Name:          name,
 		Email:         email,
 		OauthClientID: payload.Subject,
-		Username:      utils.GenerateUsername(),
-		Mobile:        utils.Blank,
+		Username:      util.GenerateUsername(),
+		Mobile:        constant.Blank,
 	}
 
 	// Check if appUser exists by oauthclientId and update last login
 	appUser, appUserErr := db.Queries.UpdateUserLastLoginAtByOAuthClientID(
 		c,
-		utils.GetSQLNullString(appUserParams.OauthClientID),
+		util.GetSQLNullString(appUserParams.OauthClientID),
 	)
 
 	if appUserErr != nil {
 		if errors.Is(appUserErr, sql.ErrNoRows) {
 			// Create new user
-			newAppUser, newAppUserErr := CreateNewAppUser(appUserParams)
+			newAppUser, newAppUserErr := userservice.CreateNewAppUser(appUserParams)
 			if newAppUserErr != nil {
 				logger.Log.Errorf(
 					"failed to create app user %s for email %s oauth client id %s",

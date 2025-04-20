@@ -1,25 +1,25 @@
-package handlers
+package userhandler
 
 import (
 	"database/sql"
 	"fmt"
-	HttpStatus "net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/ishantSikdar/mindo-server/internal/constants"
 	"github.com/ishantSikdar/mindo-server/internal/middleware"
-	"github.com/ishantSikdar/mindo-server/internal/services"
+	userservice "github.com/ishantSikdar/mindo-server/internal/services/user_service"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/utils"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/message"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/route"
 )
 
 func RegisterUserRoutes(rg *gin.RouterGroup) {
-	userRg := rg.Group(constants.User, middleware.AuthMiddleware())
+	userRg := rg.Group(route.User, middleware.AuthMiddleware())
 
 	{
-		userRg.GET(utils.IdParam, getUserByID)
+		userRg.GET(constant.IdParam, getUserByID)
 	}
 
 }
@@ -30,20 +30,20 @@ func getUserByID(c *gin.Context) {
 	parsedId, parseErr := uuid.Parse(paramId)
 	if parseErr != nil {
 		http.NewErrorResponse(
-			HttpStatus.StatusBadRequest,
-			constants.InvalidUserID,
+			http.StatusBadRequest,
+			message.InvalidUserID,
 			parseErr,
 		).Send(c)
 		return
 	}
 
-	user, userErr := services.GetAppUserByUserID(parsedId)
+	user, userErr := userservice.GetAppUserByUserID(parsedId)
 
 	if userErr != nil {
 		if userErr == sql.ErrNoRows {
 			logger.Log.Errorf("user %s not found, %s", parsedId, userErr)
 			http.NewErrorResponse(
-				HttpStatus.StatusNotFound,
+				http.StatusNotFound,
 				fmt.Sprintf("User of %s ID not found", parsedId),
 				userErr,
 			).Send(c)
@@ -52,15 +52,15 @@ func getUserByID(c *gin.Context) {
 
 		logger.Log.Errorf("failed to get user %s userID: %s", userErr, parsedId)
 		http.NewErrorResponse(
-			HttpStatus.StatusInternalServerError,
-			constants.SomethingWentWrong,
+			http.StatusInternalServerError,
+			message.SomethingWentWrong,
 			userErr,
 		).Send(c)
 		return
 	}
 
 	http.NewResponse(
-		HttpStatus.StatusFound,
+		http.StatusFound,
 		user,
 	).Send(c)
 }

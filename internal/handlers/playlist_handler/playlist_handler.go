@@ -1,20 +1,19 @@
-package handlers
+package playlisthandler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/ishantSikdar/mindo-server/internal/constants"
 	"github.com/ishantSikdar/mindo-server/internal/middleware"
-	"github.com/ishantSikdar/mindo-server/pkg/utils"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
+	"github.com/ishantSikdar/mindo-server/pkg/utils/route"
 )
 
 func RegisterPlaylist(rg *gin.RouterGroup) {
-	playlistRg := rg.Group(constants.Playlists, middleware.AuthMiddleware())
+	playlistRg := rg.Group(route.Playlists, middleware.AuthMiddleware())
 	{
-		playlistRg.POST(utils.Blank, createPlaylistHandler)
-		playlistRg.GET(utils.Blank, getAllPlaylistsHandler)
-		playlistRg.GET(utils.IdParam, getPlaylistByIdHandler)
+		playlistRg.POST(constant.Blank, createPlaylistHandler)
+		playlistRg.GET(constant.Blank, getAllPlaylistsHandler)
+		playlistRg.GET(constant.IdParam, getPlaylistByIdHandler)
 	}
 }
 
