@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/easc01/mindo-server/internal/config"
 	"github.com/easc01/mindo-server/internal/models"
+	authservice "github.com/easc01/mindo-server/internal/services/auth_service"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
@@ -16,7 +16,6 @@ import (
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
-	"google.golang.org/api/idtoken"
 )
 
 type contextKey string
@@ -37,63 +36,68 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		payload, payloadErr := idtoken.Validate(c, token, config.GetConfig().GoogleClientId)
+		claims, payloadErr := authservice.ValidateJWT(token)
 		if payloadErr != nil {
 			logger.Log.Errorf("invalid auth token %s", payloadErr)
 			httputil.NewErrorResponse(
 				http.StatusUnauthorized,
-				fmt.Sprintf("Invalid auth token, %s", payloadErr.Error()),
+				fmt.Sprintf("invalid auth token, %s", payloadErr.Error()),
 				payloadErr.Error(),
 			).Send(c)
 			c.Abort()
 			return
 		}
 
-		appUser, appUserErr := db.Queries.GetAppUserByClientOAuthID(
-			c.Request.Context(),
-			util.GetSQLNullString(payload.Subject),
-		)
-		if appUserErr != nil {
-			if errors.Is(appUserErr, sql.ErrNoRows) {
-				httputil.NewErrorResponse(
-					http.StatusNotFound,
-					message.UserNotFound,
-					appUserErr.Error(),
-				).Send(c)
-			} else {
-				httputil.NewErrorResponse(
-					http.StatusInternalServerError,
-					message.SomethingWentWrong,
-					appUserErr.Error(),
-				).Send(c)
-			}
-			logger.Log.Errorf(
-				"failed to get user of auth client id: %s, %s",
-				payload.Subject,
-				appUserErr,
+		if claims.Role == models.UserTypeAppUser {
+			appUser, appUserErr := db.Queries.GetAppUserByUserID(
+				c.Request.Context(),
+				util.ConvertStringToUUID(claims.Subject),
 			)
-			c.Abort()
-			return
+
+			if appUserErr != nil {
+				if errors.Is(appUserErr, sql.ErrNoRows) {
+					httputil.NewErrorResponse(
+						http.StatusNotFound,
+						message.UserNotFound,
+						appUserErr.Error(),
+					).Send(c)
+				} else {
+					httputil.NewErrorResponse(
+						http.StatusInternalServerError,
+						message.SomethingWentWrong,
+						appUserErr.Error(),
+					).Send(c)
+				}
+				logger.Log.Errorf(
+					"failed to get user of auth client id: %s, %s",
+					claims.Subject,
+					appUserErr,
+				)
+				c.Abort()
+				return
+			}
+
+			appUserContext := dto.AppUserDataDTO{
+				UserID:            appUser.UserID,
+				Username:          appUser.Username.String,
+				ProfilePictureUrl: appUser.ProfilePictureUrl.String,
+				OauthClientID:     appUser.OauthClientID.String,
+				Bio:               appUser.Bio.String,
+				Name:              appUser.Name.String,
+				Mobile:            appUser.Mobile.String,
+				Email:             appUser.Email.String,
+				LastLoginAt:       appUser.LastLoginAt.Time,
+				UpdatedAt:         appUser.UpdatedAt.Time,
+				CreatedAt:         appUser.CreatedAt.Time,
+				UpdatedBy:         appUser.UpdatedBy.UUID,
+				UserType:          models.UserTypeAppUser,
+			}
+
+			c.Set(string(UserContextKey), appUserContext)
+			c.Next()
 		}
 
-		appUserContext := dto.AppUserDataDTO{
-			UserID:            appUser.UserID,
-			Username:          appUser.Username.String,
-			ProfilePictureUrl: appUser.ProfilePictureUrl.String,
-			OauthClientID:     appUser.OauthClientID.String,
-			Bio:               appUser.Bio.String,
-			Name:              appUser.Name.String,
-			Mobile:            appUser.Mobile.String,
-			Email:             appUser.Email.String,
-			LastLoginAt:       appUser.LastLoginAt.Time,
-			UpdatedAt:         appUser.UpdatedAt.Time,
-			CreatedAt:         appUser.CreatedAt.Time,
-			UpdatedBy:         appUser.UpdatedBy.UUID,
-			UserType:          models.UserTypeAppUser,
-		}
-
-		c.Set(string(UserContextKey), appUserContext)
-		c.Next()
+		c.Abort()
 	}
 }
 

@@ -11,7 +11,6 @@ import (
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/google/uuid"
 )
 
@@ -99,20 +98,23 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 		&Claims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf(message.InvalidSigningMethod)
+				return nil, fmt.Errorf("invalid signing method")
 			}
 			return secretKey, nil
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if the token is valid
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return claims, nil
-	} else {
-		return nil, fmt.Errorf(message.InvalidToken)
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid token")
 	}
+
+	if !claims.VerifyIssuer("Mindo2.0", true) {
+		return nil, fmt.Errorf("invalid issuer")
+	}
+
+	return claims, nil
 }

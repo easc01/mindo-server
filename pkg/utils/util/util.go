@@ -22,6 +22,12 @@ func GetSQLNullString(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: s != constant.Blank}
 }
 
+// ConvertStringToUUID converts a string to a uuid.UUID
+func ConvertStringToUUID(id string) uuid.UUID {
+	parsedId, _ := uuid.Parse(id)
+	return parsedId
+}
+
 // Generate a random username with UUID suffix
 func GenerateUsername() string {
 	uid := uuid.New()
