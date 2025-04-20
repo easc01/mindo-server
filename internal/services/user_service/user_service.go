@@ -7,18 +7,18 @@ import (
 	"github.com/google/uuid"
 	"github.com/ishantSikdar/mindo-server/internal/models"
 	"github.com/ishantSikdar/mindo-server/pkg/db"
+	"github.com/ishantSikdar/mindo-server/pkg/dto"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/structs"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/util"
 )
 
-func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserDataDTO, error) {
+func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, error) {
 	userCreationContext := context.Background()
 
 	tx, err := db.DB.BeginTx(userCreationContext, nil)
 	if err != nil {
 		logger.Log.Errorf("failed to init a transaction, %s", err)
-		return structs.AppUserDataDTO{}, err
+		return dto.AppUserDataDTO{}, err
 	}
 
 	qtx := db.Queries.WithTx(tx)
@@ -39,7 +39,7 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 	if userErr != nil {
 		tx.Rollback()
 		logger.Log.Errorf("failed to create new user of user_id %s, due to %s", newUserID, userErr)
-		return structs.AppUserDataDTO{}, userErr
+		return dto.AppUserDataDTO{}, userErr
 	}
 
 	appUser, appUserErr := qtx.CreateNewAppUser(userCreationContext, models.CreateNewAppUserParams{
@@ -64,7 +64,7 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 			newUserID,
 			appUserErr,
 		)
-		return structs.AppUserDataDTO{}, appUserErr
+		return dto.AppUserDataDTO{}, appUserErr
 	}
 
 	txErr := tx.Commit()
@@ -74,10 +74,10 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 			newUserID,
 			txErr,
 		)
-		return structs.AppUserDataDTO{}, userErr
+		return dto.AppUserDataDTO{}, userErr
 	}
 
-	return structs.AppUserDataDTO{
+	return dto.AppUserDataDTO{
 		UserID:            appUser.UserID,
 		Username:          appUser.Username.String,
 		ProfilePictureUrl: appUser.ProfilePictureUrl.String,
@@ -94,20 +94,20 @@ func CreateNewAppUser(newUserData structs.NewAppUserParams) (structs.AppUserData
 	}, nil
 }
 
-func GetAppUserByUserID(id uuid.UUID) (structs.AppUserDataDTO, error) {
+func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, error) {
 	appUser, appUserErr := db.Queries.GetAppUserByUserID(context.Background(), id)
 
 	if appUserErr != nil {
 		if appUserErr == sql.ErrNoRows {
 			logger.Log.Errorf("user of ID %s not found, %s", id, appUserErr)
-			return structs.AppUserDataDTO{}, appUserErr
+			return dto.AppUserDataDTO{}, appUserErr
 		}
 
 		logger.Log.Errorf("failed to get user of ID %s, %s", id, appUserErr)
-		return structs.AppUserDataDTO{}, appUserErr
+		return dto.AppUserDataDTO{}, appUserErr
 	}
 
-	return structs.AppUserDataDTO{
+	return dto.AppUserDataDTO{
 		UserID:            appUser.UserID,
 		Username:          appUser.Username.String,
 		ProfilePictureUrl: appUser.ProfilePictureUrl.String,

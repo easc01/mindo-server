@@ -3,7 +3,7 @@ package authhandler
 import (
 	"github.com/gin-gonic/gin"
 	authservice "github.com/ishantSikdar/mindo-server/internal/services/auth_service"
-	"github.com/ishantSikdar/mindo-server/pkg/structs"
+	"github.com/ishantSikdar/mindo-server/pkg/dto"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/message"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/route"
@@ -18,7 +18,7 @@ func RegisterAuth(rg *gin.RouterGroup) {
 }
 
 func googleAuthHandler(c *gin.Context) {
-	req, ok := http.GetRequestBody[structs.GoogleLoginRequest](c)
+	req, ok := http.GetRequestBody[dto.GoogleLoginRequest](c)
 
 	if !ok {
 		return

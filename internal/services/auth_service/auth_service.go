@@ -10,7 +10,7 @@ import (
 	userservice "github.com/ishantSikdar/mindo-server/internal/services/user_service"
 	"github.com/ishantSikdar/mindo-server/pkg/db"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/structs"
+	"github.com/ishantSikdar/mindo-server/pkg/dto"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/util"
 	"google.golang.org/api/idtoken"
@@ -18,8 +18,8 @@ import (
 
 func GoogleAuthService(
 	c *gin.Context,
-	googleReq *structs.GoogleLoginRequest,
-) (structs.AppUserDataDTO, error) {
+	googleReq *dto.GoogleLoginRequest,
+) (dto.AppUserDataDTO, error) {
 
 	payload, payloadErr := idtoken.Validate(c, googleReq.IDToken, config.GetConfig().GoogleClientId)
 	if payloadErr != nil {
@@ -28,13 +28,13 @@ func GoogleAuthService(
 			payloadErr,
 			googleReq.IDToken,
 		)
-		return structs.AppUserDataDTO{}, payloadErr
+		return dto.AppUserDataDTO{}, payloadErr
 	}
 
 	name, _ := payload.Claims["name"].(string)
 	email, _ := payload.Claims["email"].(string)
 
-	appUserParams := structs.NewAppUserParams{
+	appUserParams := dto.NewAppUserParams{
 		Name:          name,
 		Email:         email,
 		OauthClientID: payload.Subject,
@@ -59,7 +59,7 @@ func GoogleAuthService(
 					appUserParams.Email,
 					appUserParams.OauthClientID,
 				)
-				return structs.AppUserDataDTO{}, newAppUserErr
+				return dto.AppUserDataDTO{}, newAppUserErr
 			}
 
 			logger.Log.Infof("new app user created %s", newAppUser.UserID)
@@ -72,10 +72,10 @@ func GoogleAuthService(
 			appUserErr,
 			appUserParams.OauthClientID,
 		)
-		return structs.AppUserDataDTO{}, appUserErr
+		return dto.AppUserDataDTO{}, appUserErr
 	}
 
-	return structs.AppUserDataDTO{
+	return dto.AppUserDataDTO{
 		UserID:            appUser.UserID,
 		Username:          appUser.Username.String,
 		ProfilePictureUrl: appUser.ProfilePictureUrl.String,

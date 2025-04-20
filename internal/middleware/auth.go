@@ -10,7 +10,7 @@ import (
 	"github.com/ishantSikdar/mindo-server/internal/models"
 	"github.com/ishantSikdar/mindo-server/pkg/db"
 	"github.com/ishantSikdar/mindo-server/pkg/logger"
-	"github.com/ishantSikdar/mindo-server/pkg/structs"
+	"github.com/ishantSikdar/mindo-server/pkg/dto"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/constant"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/http"
 	"github.com/ishantSikdar/mindo-server/pkg/utils/message"
@@ -75,7 +75,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		appUserContext := structs.AppUserDataDTO{
+		appUserContext := dto.AppUserDataDTO{
 			UserID:            appUser.UserID,
 			Username:          appUser.Username.String,
 			ProfilePictureUrl: appUser.ProfilePictureUrl.String,
@@ -96,11 +96,11 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func GetUser(ctx *gin.Context) (structs.AppUserDataDTO, bool) {
+func GetUser(ctx *gin.Context) (dto.AppUserDataDTO, bool) {
 	user, ok := ctx.Get(string(UserContextKey))
 	if !ok {
-		return structs.AppUserDataDTO{}, false
+		return dto.AppUserDataDTO{}, false
 	}
-	appUser, ok := user.(structs.AppUserDataDTO)
+	appUser, ok := user.(dto.AppUserDataDTO)
 	return appUser, ok
 }
