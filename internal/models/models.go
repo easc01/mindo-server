@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -215,6 +216,16 @@ type User struct {
 	UpdatedAt sql.NullTime
 	CreatedAt sql.NullTime
 	UpdatedBy uuid.NullUUID
+}
+
+type UserToken struct {
+	ID           uuid.UUID
+	UserID       uuid.UUID
+	RefreshToken string
+	ExpiresAt    time.Time
+	UpdatedAt    sql.NullTime
+	CreatedAt    sql.NullTime
+	UpdatedBy    uuid.NullUUID
 }
 
 type WatchedPlaylist struct {

@@ -6,3 +6,4 @@ VALUES (
         $2, -- UserType
         $3 -- Updated By
     ) RETURNING *;
+

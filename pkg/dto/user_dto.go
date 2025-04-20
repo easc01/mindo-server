@@ -57,3 +57,12 @@ type AdminSignInParams struct {
 	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 }
+
+type UserTokenResponse[T any] struct {
+	Token Token `json:"token"`
+	Data  T     `json:"data"`
+}
+
+type Token struct {
+	AccessToken string `json:"accessToken"`
+}

@@ -168,6 +168,17 @@ CREATE TABLE "user" (
     "updated_by" uuid
 );
 
+-- User Token Table
+CREATE TABLE "user_token" (
+    "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    "user_id" uuid NOT NULL UNIQUE,
+    "refresh_token" TEXT NOT NULL,
+    "expires_at" TIMESTAMP NOT NULL,
+    "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+    "updated_by" uuid
+);
+
 -- App User Interest Table
 CREATE TABLE "app_user_interest" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
@@ -217,6 +228,9 @@ CREATE TABLE "interest" (
 );
 
 -- Add Foreign Keys
+ALTER TABLE "user_token" 
+ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
+
 ALTER TABLE "topic"
 ADD FOREIGN KEY ("playlist_id") REFERENCES "playlist" ("id");
 
