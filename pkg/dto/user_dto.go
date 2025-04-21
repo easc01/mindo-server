@@ -13,7 +13,7 @@ type GoogleLoginRequest struct {
 }
 
 type AppUserDataDTO struct {
-	AccessToken       string          `json:"accessToken"`
+	AccessToken       string          `json:"accessToken,omitempty"`
 	UserID            uuid.UUID       `json:"userId"`
 	UserType          models.UserType `json:"userType"`
 	Username          string          `json:"username"`
@@ -30,7 +30,7 @@ type AppUserDataDTO struct {
 }
 
 type AdminUserDataDTO struct {
-	AccessToken string          `json:"accessToken"`
+	AccessToken string          `json:"accessToken,omitempty"`
 	UserID      uuid.UUID       `json:"userId"`
 	UserType    models.UserType `json:"userType"`
 	Name        string          `json:"name"`

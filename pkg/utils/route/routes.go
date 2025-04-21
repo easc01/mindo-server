@@ -8,6 +8,8 @@ const (
 	Refresh   = "/refresh"
 	Google    = "/google"
 	Playlists = "/playlists"
+	SignIn    = "/sign-in"
+	SignUp    = "/sign-up"
 )
 
 func GetRefreshRoute() string {

@@ -171,3 +171,30 @@ func AdminSignIn(
 		UpdatedBy:   adminUser.UpdatedBy.UUID,
 	}, http.StatusAccepted, nil
 }
+
+func GetAdminUserByUserID(id uuid.UUID) (dto.AdminUserDataDTO, int, error) {
+	adminUser, adminUserErr := db.Queries.GetAdminUserByUserID(context.Background(), id)
+
+	if adminUserErr != nil {
+		if adminUserErr == sql.ErrNoRows {
+			logger.Log.Errorf("admin of id %s not found, %s", id, adminUserErr)
+			return dto.AdminUserDataDTO{}, http.StatusNotFound, fmt.Errorf(message.UserNotFound)
+		}
+
+		logger.Log.Errorf("failed to get admin of id %s, %s", id, adminUserErr)
+		return dto.AdminUserDataDTO{}, http.StatusInternalServerError, fmt.Errorf(
+			message.SomethingWentWrong,
+		)
+	}
+
+	return dto.AdminUserDataDTO{
+		UserID:            adminUser.UserID,
+		Name:              adminUser.Name.String,
+		Email:             adminUser.Email.String,
+		LastLoginAt:       adminUser.LastLoginAt.Time,
+		UpdatedAt:         adminUser.UpdatedAt.Time,
+		CreatedAt:         adminUser.CreatedAt.Time,
+		UpdatedBy:         adminUser.UpdatedBy.UUID,
+		UserType:          adminUser.UserType.UserType,
+	}, http.StatusFound, nil
+}

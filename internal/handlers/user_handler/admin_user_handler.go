@@ -6,55 +6,41 @@ import (
 	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
-	"github.com/easc01/mindo-server/pkg/dto"
+	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/constant"
 	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func RegisterAdminUserRoutes(rg *gin.RouterGroup) {
-	adminRg := rg.Group(route.Admin, middleware.RequireRole(models.UserTypeAdminUser))
+	adminProtectedRg := rg.Group(route.Admin, middleware.RequireRole(models.UserTypeAdminUser))
 
 	{
-		adminRg.POST(route.Admin, adminSignUpHandler)
-		adminRg.POST(route.Admin+"/sign-in", adminSignInHandler)
+		adminProtectedRg.GET(constant.IdParam, getAdminUserByID)
 	}
 
 }
 
-func adminSignUpHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.NewAdminUserParams](c)
-	if !ok {
-		return
-	}
+func getAdminUserByID(c *gin.Context) {
+	paramId := c.Param("id")
 
-	user, userErr := userservice.CreateNewAdminUser(&req)
-
-	if userErr != nil {
+	parsedId, parseErr := uuid.Parse(paramId)
+	if parseErr != nil {
 		httputil.NewErrorResponse(
-			http.StatusInternalServerError,
-			message.SomethingWentWrong,
-			userErr.Error(),
+			http.StatusBadRequest,
+			message.InvalidUserID,
+			parseErr.Error(),
 		).Send(c)
 		return
 	}
 
-	httputil.NewResponse(
-		http.StatusCreated,
-		user,
-	).Send(c)
-}
-
-func adminSignInHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.AdminSignInParams](c)
-	if !ok {
-		return
-	}
-
-	user, statusCode, userErr := userservice.AdminSignIn(c, &req)
+	user, statusCode, userErr := userservice.GetAdminUserByUserID(parsedId)
 
 	if userErr != nil {
+		logger.Log.Errorf("failed to get admin %s id: %s", userErr, parsedId)
 		httputil.NewErrorResponse(
 			statusCode,
 			message.SomethingWentWrong,
@@ -64,7 +50,7 @@ func adminSignInHandler(c *gin.Context) {
 	}
 
 	httputil.NewResponse(
-		statusCode,
+		http.StatusFound,
 		user,
 	).Send(c)
 }
