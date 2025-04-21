@@ -4,10 +4,11 @@ import (
 	"net/http"
 
 	"github.com/easc01/mindo-server/internal/middleware"
+	"github.com/easc01/mindo-server/internal/models"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	"github.com/easc01/mindo-server/pkg/utils/http_util"
+	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ import (
 )
 
 func RegisterAppUserRoutes(rg *gin.RouterGroup) {
-	userRg := rg.Group(route.User, middleware.AuthMiddleware())
+	userRg := rg.Group(route.User, middleware.RequireRole(models.UserTypeAppUser))
 
 	{
 		userRg.GET(constant.IdParam, getAppUserByID)

@@ -22,61 +22,49 @@ type contextKey string
 
 const UserContextKey contextKey = "user"
 
-func AuthMiddleware() gin.HandlerFunc {
+func containsUserType(slice []models.UserType, val models.UserType) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
+}
+
+func RequireRole(allowedRoles ...models.UserType) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader(constant.Authorization)
-
 		if token == "" {
-			httputil.NewErrorResponse(
-				http.StatusUnauthorized,
-				message.AuthHeaderRequired,
-				message.ProvideAuthHeader,
-			).Send(c)
+			httputil.NewErrorResponse(http.StatusUnauthorized, message.AuthHeaderRequired, message.ProvideAuthHeader).
+				Send(c)
 			c.Abort()
 			return
 		}
 
-		claims, payloadErr := authservice.ValidateJWT(token)
-		if payloadErr != nil {
-			logger.Log.Errorf("invalid auth token %s", payloadErr)
-			httputil.NewErrorResponse(
-				http.StatusUnauthorized,
-				fmt.Sprintf("invalid auth token, %s", payloadErr.Error()),
-				payloadErr.Error(),
-			).Send(c)
+		claims, err := authservice.ValidateJWT(token)
+		if err != nil {
+			logger.Log.Errorf("invalid auth token %s", err)
+			httputil.NewErrorResponse(http.StatusUnauthorized, fmt.Sprintf("invalid auth token, %s", err.Error()), err.Error()).
+				Send(c)
 			c.Abort()
 			return
 		}
+
+		if !containsUserType(allowedRoles, claims.Role) {
+			logger.Log.Errorf("invalid resource access by user Id: %s", claims.Subject)
+			httputil.NewErrorResponse(http.StatusForbidden, "invalid resource access", nil).Send(c)
+			c.Abort()
+			return
+		}
+
+		userID := util.ConvertStringToUUID(claims.Subject)
 
 		if claims.Role == models.UserTypeAppUser {
-			appUser, appUserErr := db.Queries.GetAppUserByUserID(
-				c.Request.Context(),
-				util.ConvertStringToUUID(claims.Subject),
-			)
-
-			if appUserErr != nil {
-				if errors.Is(appUserErr, sql.ErrNoRows) {
-					httputil.NewErrorResponse(
-						http.StatusNotFound,
-						message.UserNotFound,
-						appUserErr.Error(),
-					).Send(c)
-				} else {
-					httputil.NewErrorResponse(
-						http.StatusInternalServerError,
-						message.SomethingWentWrong,
-						appUserErr.Error(),
-					).Send(c)
-				}
-				logger.Log.Errorf(
-					"failed to get user of auth client id: %s, %s",
-					claims.Subject,
-					appUserErr,
-				)
-				c.Abort()
+			appUser, err := db.Queries.GetAppUserByUserID(c.Request.Context(), userID)
+			if err != nil {
+				handleUserFetchErr(c, claims.Subject, err)
 				return
 			}
-
 			appUserContext := dto.AppUserDataDTO{
 				UserID:            appUser.UserID,
 				Username:          appUser.Username.String,
@@ -90,22 +78,63 @@ func AuthMiddleware() gin.HandlerFunc {
 				UpdatedAt:         appUser.UpdatedAt.Time,
 				CreatedAt:         appUser.CreatedAt.Time,
 				UpdatedBy:         appUser.UpdatedBy.UUID,
-				UserType:          models.UserTypeAppUser,
+				UserType:          appUser.UserType.UserType,
 			}
-
 			c.Set(string(UserContextKey), appUserContext)
 			c.Next()
+			return
 		}
 
-		c.Abort()
+		if claims.Role == models.UserTypeAdminUser {
+			adminUser, err := db.Queries.GetAdminUserByUserID(c.Request.Context(), userID)
+			if err != nil {
+				handleUserFetchErr(c, claims.Subject, err)
+				return
+			}
+			adminUserContext := dto.AdminUserDataDTO{
+				UserID:      adminUser.UserID,
+				Name:        adminUser.Name.String,
+				Email:       adminUser.Email.String,
+				LastLoginAt: adminUser.LastLoginAt.Time,
+				UpdatedAt:   adminUser.UpdatedAt.Time,
+				CreatedAt:   adminUser.CreatedAt.Time,
+				UpdatedBy:   adminUser.UpdatedBy.UUID,
+				UserType:    models.UserTypeAdminUser,
+			}
+			c.Set(string(UserContextKey), adminUserContext)
+			c.Next()
+			return
+		}
 	}
 }
 
-func GetUser(ctx *gin.Context) (dto.AppUserDataDTO, bool) {
+func handleUserFetchErr(c *gin.Context, subject string, err error) {
+	if errors.Is(err, sql.ErrNoRows) {
+		httputil.NewErrorResponse(http.StatusNotFound, message.UserNotFound, err.Error()).Send(c)
+	} else {
+		httputil.NewErrorResponse(http.StatusInternalServerError, message.SomethingWentWrong, err.Error()).Send(c)
+	}
+	logger.Log.Errorf("failed to get user by id: %s, %s", subject, err)
+	c.Abort()
+}
+
+type UserContextUnion struct {
+	AppUser   *dto.AppUserDataDTO
+	AdminUser *dto.AdminUserDataDTO
+}
+
+func GetUser(ctx *gin.Context) (UserContextUnion, bool) {
 	user, ok := ctx.Get(string(UserContextKey))
 	if !ok {
-		return dto.AppUserDataDTO{}, false
+		return UserContextUnion{}, false
 	}
-	appUser, ok := user.(dto.AppUserDataDTO)
-	return appUser, ok
+
+	switch u := user.(type) {
+	case dto.AppUserDataDTO:
+		return UserContextUnion{AppUser: &u}, true
+	case dto.AdminUserDataDTO:
+		return UserContextUnion{AdminUser: &u}, true
+	default:
+		return UserContextUnion{}, false
+	}
 }

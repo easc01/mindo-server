@@ -25,6 +25,7 @@ VALUES (
 -- name: GetAppUserByUserID :one
 SELECT
     u.id AS user_id,
+    u.user_type,
     au.username,
     au.profile_picture_url,
     au.oauth_client_id,

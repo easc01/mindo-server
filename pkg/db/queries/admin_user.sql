@@ -36,3 +36,19 @@ WHERE
 UPDATE admin_user
 SET last_login_at = now()
 WHERE user_id = $1;
+
+-- name: GetAdminUserByUserID :one
+SELECT
+    u.id AS user_id,
+    u.user_type,
+    au.name,
+    au.email,
+    au.password_hash,
+    au.last_login_at,
+    au.created_at,
+    au.updated_at,
+    au.updated_by
+FROM admin_user au
+    JOIN "user" u ON u.id = au.user_id
+WHERE
+    au.user_id = $1;

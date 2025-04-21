@@ -135,6 +135,7 @@ func (q *Queries) GetAppUserByClientOAuthID(ctx context.Context, oauthClientID s
 const getAppUserByUserID = `-- name: GetAppUserByUserID :one
 SELECT
     u.id AS user_id,
+    u.user_type,
     au.username,
     au.profile_picture_url,
     au.oauth_client_id,
@@ -154,6 +155,7 @@ WHERE
 
 type GetAppUserByUserIDRow struct {
 	UserID            uuid.UUID
+	UserType          NullUserType
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
 	OauthClientID     sql.NullString
@@ -172,6 +174,7 @@ func (q *Queries) GetAppUserByUserID(ctx context.Context, userID uuid.UUID) (Get
 	var i GetAppUserByUserIDRow
 	err := row.Scan(
 		&i.UserID,
+		&i.UserType,
 		&i.Username,
 		&i.ProfilePictureUrl,
 		&i.OauthClientID,

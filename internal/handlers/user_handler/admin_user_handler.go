@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/easc01/mindo-server/internal/middleware"
+	"github.com/easc01/mindo-server/internal/models"
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/dto"
 	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
@@ -13,7 +14,7 @@ import (
 )
 
 func RegisterAdminUserRoutes(rg *gin.RouterGroup) {
-	adminRg := rg.Group(route.Admin, middleware.AuthMiddleware())
+	adminRg := rg.Group(route.Admin, middleware.RequireRole(models.UserTypeAdminUser))
 
 	{
 		adminRg.POST(route.Admin, adminSignUpHandler)

@@ -106,6 +106,52 @@ func (q *Queries) GetAdminUserByEmail(ctx context.Context, email sql.NullString)
 	return i, err
 }
 
+const getAdminUserByUserID = `-- name: GetAdminUserByUserID :one
+SELECT
+    u.id AS user_id,
+    u.user_type,
+    au.name,
+    au.email,
+    au.password_hash,
+    au.last_login_at,
+    au.created_at,
+    au.updated_at,
+    au.updated_by
+FROM admin_user au
+    JOIN "user" u ON u.id = au.user_id
+WHERE
+    au.user_id = $1
+`
+
+type GetAdminUserByUserIDRow struct {
+	UserID       uuid.UUID
+	UserType     NullUserType
+	Name         sql.NullString
+	Email        sql.NullString
+	PasswordHash sql.NullString
+	LastLoginAt  sql.NullTime
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	UpdatedBy    uuid.NullUUID
+}
+
+func (q *Queries) GetAdminUserByUserID(ctx context.Context, userID uuid.UUID) (GetAdminUserByUserIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getAdminUserByUserID, userID)
+	var i GetAdminUserByUserIDRow
+	err := row.Scan(
+		&i.UserID,
+		&i.UserType,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.LastLoginAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UpdatedBy,
+	)
+	return i, err
+}
+
 const updateAdminUserLastLoginByUserId = `-- name: UpdateAdminUserLastLoginByUserId :exec
 UPDATE admin_user
 SET last_login_at = now()

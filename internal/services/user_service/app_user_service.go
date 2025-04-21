@@ -219,6 +219,6 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 		UpdatedAt:         appUser.UpdatedAt.Time,
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
-		UserType:          models.UserTypeAppUser,
+		UserType:          appUser.UserType.UserType,
 	}, http.StatusFound, nil
 }
