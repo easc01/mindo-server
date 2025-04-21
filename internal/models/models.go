@@ -218,6 +218,15 @@ type User struct {
 	UpdatedBy uuid.NullUUID
 }
 
+type UserPlaylist struct {
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	PlaylistID uuid.UUID
+	UpdatedAt  sql.NullTime
+	CreatedAt  sql.NullTime
+	UpdatedBy  uuid.NullUUID
+}
+
 type UserToken struct {
 	ID           uuid.UUID
 	UserID       uuid.UUID

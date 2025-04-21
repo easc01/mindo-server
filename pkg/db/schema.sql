@@ -12,6 +12,16 @@ CREATE TABLE "playlist" (
     "updated_by" uuid
 );
 
+-- user saved playlist
+CREATE TABLE "user_playlist" (
+    "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    "user_id" uuid NOT NULL,
+    "playlist_id" uuid NOT NULL,
+    "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+    "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+    "updated_by" uuid
+);
+
 -- Topic Table
 CREATE TABLE "topic" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
@@ -228,7 +238,13 @@ CREATE TABLE "interest" (
 );
 
 -- Add Foreign Keys
-ALTER TABLE "user_token" 
+ALTER TABLE "user_playlist"
+ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
+
+ALTER TABLE "user_playlist"
+ADD FOREIGN KEY ("playlist_id") REFERENCES "playlist" ("id");
+
+ALTER TABLE "user_token"
 ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
 ALTER TABLE "topic"
