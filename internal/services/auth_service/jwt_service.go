@@ -41,6 +41,7 @@ func CreateAccessToken(id string, userId string, role models.UserType) (string, 
 		return constant.Blank, err
 	}
 
+	logger.Log.Infof("accesstoken of id %s generated for user id %s", id, userId)
 	return token, nil
 }
 
