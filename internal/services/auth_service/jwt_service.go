@@ -45,11 +45,12 @@ func CreateAccessToken(id string, userId string, role models.UserType) (string, 
 	return token, nil
 }
 
-func CreateRefreshTokenByUserId(userId uuid.UUID) (models.UserToken, error) {
+func CreateRefreshTokenByUserId(userId uuid.UUID, role models.UserType) (models.UserToken, error) {
 	refreshToken := uuid.New()
 
 	userTokenParams := models.UpsertUserTokenParams{
 		UserID:       userId,
+		Role:         role,
 		RefreshToken: refreshToken,
 		ExpiresAt:    time.Now().Add(constant.Month),
 		UpdatedBy:    uuid.NullUUID{UUID: userId, Valid: true},

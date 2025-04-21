@@ -78,7 +78,7 @@ func RequireRole(allowedRoles ...models.UserType) gin.HandlerFunc {
 				UpdatedAt:         appUser.UpdatedAt.Time,
 				CreatedAt:         appUser.CreatedAt.Time,
 				UpdatedBy:         appUser.UpdatedBy.UUID,
-				UserType:          appUser.UserType.UserType,
+				UserType:          appUser.UserType,
 			}
 			c.Set(string(UserContextKey), appUserContext)
 			c.Next()

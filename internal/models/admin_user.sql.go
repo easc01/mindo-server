@@ -79,7 +79,7 @@ WHERE
 
 type GetAdminUserByEmailRow struct {
 	UserID       uuid.UUID
-	UserType     NullUserType
+	UserType     UserType
 	Name         sql.NullString
 	Email        sql.NullString
 	PasswordHash sql.NullString
@@ -125,7 +125,7 @@ WHERE
 
 type GetAdminUserByUserIDRow struct {
 	UserID       uuid.UUID
-	UserType     NullUserType
+	UserType     UserType
 	Name         sql.NullString
 	Email        sql.NullString
 	PasswordHash sql.NullString

@@ -23,7 +23,7 @@ VALUES (
 
 type CreateNewUserParams struct {
 	ID        uuid.UUID
-	UserType  NullUserType
+	UserType  UserType
 	UpdatedBy uuid.NullUUID
 }
 

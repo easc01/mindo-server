@@ -3,14 +3,16 @@ INSERT INTO
     user_token (
         user_id,
         refresh_token,
+        role,
         expires_at,
         updated_by
     )
 VALUES (
     $1, -- User Id
     $2, -- Refresh Token
-    $3, -- Expires At
-    $4  -- Updated By
+    $3, -- Role
+    $4, -- Expires At
+    $5  -- Updated By
 )
 ON CONFLICT (user_id)  -- Specify the unique constraint (e.g., user_id)
 DO UPDATE SET

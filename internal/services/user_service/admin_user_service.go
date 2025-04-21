@@ -38,11 +38,8 @@ func CreateNewAdminUser(newUserData *dto.NewAdminUserParams) (dto.AdminUserDataD
 	newUserID := uuid.New()
 
 	user, userErr := qtx.CreateNewUser(userCreationContext, models.CreateNewUserParams{
-		ID: newUserID,
-		UserType: models.NullUserType{
-			UserType: models.UserTypeAdminUser,
-			Valid:    true,
-		},
+		ID:       newUserID,
+		UserType: models.UserTypeAdminUser,
 		UpdatedBy: uuid.NullUUID{
 			UUID:  newUserID,
 			Valid: true,
@@ -97,7 +94,7 @@ func CreateNewAdminUser(newUserData *dto.NewAdminUserParams) (dto.AdminUserDataD
 		UpdatedAt:   adminUser.UpdatedAt.Time,
 		CreatedAt:   adminUser.CreatedAt.Time,
 		UpdatedBy:   adminUser.UpdatedBy.UUID,
-		UserType:    user.UserType.UserType,
+		UserType:    user.UserType,
 	}, nil
 }
 
@@ -162,7 +159,7 @@ func AdminSignIn(
 	return dto.AdminUserDataDTO{
 		AccessToken: accessToken,
 		UserID:      adminUser.UserID,
-		UserType:    adminUser.UserType.UserType,
+		UserType:    adminUser.UserType,
 		Name:        adminUser.Name.String,
 		Email:       adminUser.Email.String,
 		LastLoginAt: adminUser.LastLoginAt.Time,
@@ -188,13 +185,13 @@ func GetAdminUserByUserID(id uuid.UUID) (dto.AdminUserDataDTO, int, error) {
 	}
 
 	return dto.AdminUserDataDTO{
-		UserID:            adminUser.UserID,
-		Name:              adminUser.Name.String,
-		Email:             adminUser.Email.String,
-		LastLoginAt:       adminUser.LastLoginAt.Time,
-		UpdatedAt:         adminUser.UpdatedAt.Time,
-		CreatedAt:         adminUser.CreatedAt.Time,
-		UpdatedBy:         adminUser.UpdatedBy.UUID,
-		UserType:          adminUser.UserType.UserType,
+		UserID:      adminUser.UserID,
+		Name:        adminUser.Name.String,
+		Email:       adminUser.Email.String,
+		LastLoginAt: adminUser.LastLoginAt.Time,
+		UpdatedAt:   adminUser.UpdatedAt.Time,
+		CreatedAt:   adminUser.CreatedAt.Time,
+		UpdatedBy:   adminUser.UpdatedBy.UUID,
+		UserType:    adminUser.UserType,
 	}, http.StatusAccepted, nil
 }

@@ -36,7 +36,7 @@ func IssueAuthTokens(c *gin.Context, userId uuid.UUID, role models.UserType) (st
 		return constant.Blank, atErr
 	}
 
-	refreshToken, rtErr := CreateRefreshTokenByUserId(userId)
+	refreshToken, rtErr := CreateRefreshTokenByUserId(userId, role)
 	if rtErr != nil {
 		logger.Log.Errorf(
 			"failed to create refresh token for userId: %s, %s",
@@ -61,12 +61,12 @@ func IssueAuthTokens(c *gin.Context, userId uuid.UUID, role models.UserType) (st
 
 func RefreshTokenService(c *gin.Context, refreshToken string) (dto.TokenDTO, int, error) {
 	uuidRefreshToken, _ := uuid.Parse(refreshToken)
-	
+
 	// find refresh token
 	userToken, utErr := db.Queries.GetUserTokenByRefreshToken(c, uuidRefreshToken)
 	if utErr != nil {
 		if errors.Is(utErr, sql.ErrNoRows) {
-			logger.Log.Errorf("user token not found, %s", utErr.Error())
+			logger.Log.Errorf("user token %s not found, %s", uuidRefreshToken, utErr.Error())
 			return dto.TokenDTO{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
 		}
 	}
@@ -78,7 +78,7 @@ func RefreshTokenService(c *gin.Context, refreshToken string) (dto.TokenDTO, int
 	}
 
 	// create tokens
-	accessToken, tokenErr := IssueAuthTokens(c, userToken.UserID, models.UserTypeAppUser)
+	accessToken, tokenErr := IssueAuthTokens(c, userToken.UserID, userToken.Role)
 	if tokenErr != nil {
 		logger.Log.Errorf(
 			"failed to issue auth tokens for user id: %s, %s",

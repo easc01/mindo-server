@@ -26,7 +26,11 @@ func GoogleAuthService(
 	googleReq *dto.TokenDTO,
 ) (dto.AppUserDataDTO, int, error) {
 
-	payload, payloadErr := idtoken.Validate(c, googleReq.AccessToken, config.GetConfig().GoogleClientId)
+	payload, payloadErr := idtoken.Validate(
+		c,
+		googleReq.AccessToken,
+		config.GetConfig().GoogleClientId,
+	)
 	if payloadErr != nil {
 		logger.Log.Errorf(
 			"invalid app user token, %s, for token %s",
@@ -122,11 +126,8 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 	newUserID := uuid.New()
 
 	user, userErr := qtx.CreateNewUser(userCreationContext, models.CreateNewUserParams{
-		ID: newUserID,
-		UserType: models.NullUserType{
-			UserType: models.UserTypeAppUser,
-			Valid:    true,
-		},
+		ID:       newUserID,
+		UserType: models.UserTypeAppUser,
 		UpdatedBy: uuid.NullUUID{
 			UUID:  newUserID,
 			Valid: true,
@@ -187,7 +188,7 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 		UpdatedAt:         appUser.UpdatedAt.Time,
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
-		UserType:          user.UserType.UserType,
+		UserType:          user.UserType,
 	}, nil
 }
 
@@ -219,6 +220,6 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 		UpdatedAt:         appUser.UpdatedAt.Time,
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
-		UserType:          appUser.UserType.UserType,
+		UserType:          appUser.UserType,
 	}, http.StatusAccepted, nil
 }

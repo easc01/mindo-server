@@ -155,7 +155,7 @@ WHERE
 
 type GetAppUserByUserIDRow struct {
 	UserID            uuid.UUID
-	UserType          NullUserType
+	UserType          UserType
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
 	OauthClientID     sql.NullString

@@ -212,7 +212,7 @@ type Topic struct {
 
 type User struct {
 	ID        uuid.UUID
-	UserType  NullUserType
+	UserType  UserType
 	UpdatedAt sql.NullTime
 	CreatedAt sql.NullTime
 	UpdatedBy uuid.NullUUID
@@ -230,6 +230,7 @@ type UserPlaylist struct {
 type UserToken struct {
 	ID           uuid.UUID
 	UserID       uuid.UUID
+	Role         UserType
 	RefreshToken uuid.UUID
 	ExpiresAt    time.Time
 	UpdatedAt    sql.NullTime
