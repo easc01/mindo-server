@@ -230,7 +230,7 @@ type UserPlaylist struct {
 type UserToken struct {
 	ID           uuid.UUID
 	UserID       uuid.UUID
-	RefreshToken string
+	RefreshToken uuid.UUID
 	ExpiresAt    time.Time
 	UpdatedAt    sql.NullTime
 	CreatedAt    sql.NullTime

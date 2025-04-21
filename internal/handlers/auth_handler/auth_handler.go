@@ -30,7 +30,7 @@ func RegisterAuth(rg *gin.RouterGroup) {
 }
 
 func googleAuthHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.GoogleLoginRequest](c)
+	req, ok := httputil.GetRequestBody[dto.TokenDTO](c)
 	if !ok {
 		return
 	}
@@ -71,6 +71,7 @@ func refreshTokenHandler(c *gin.Context) {
 			err.Error(),
 			constant.Blank,
 		).Send(c)
+		return
 	}
 
 	httputil.NewResponse(

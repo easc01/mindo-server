@@ -16,7 +16,7 @@ const getUserTokenByRefreshToken = `-- name: GetUserTokenByRefreshToken :one
 SELECT id, user_id, refresh_token, expires_at, updated_at, created_at, updated_by FROM user_token WHERE refresh_token = $1
 `
 
-func (q *Queries) GetUserTokenByRefreshToken(ctx context.Context, refreshToken string) (UserToken, error) {
+func (q *Queries) GetUserTokenByRefreshToken(ctx context.Context, refreshToken uuid.UUID) (UserToken, error) {
 	row := q.db.QueryRowContext(ctx, getUserTokenByRefreshToken, refreshToken)
 	var i UserToken
 	err := row.Scan(
@@ -55,7 +55,7 @@ RETURNING id, user_id, refresh_token, expires_at, updated_at, created_at, update
 
 type UpsertUserTokenParams struct {
 	UserID       uuid.UUID
-	RefreshToken string
+	RefreshToken uuid.UUID
 	ExpiresAt    time.Time
 	UpdatedBy    uuid.NullUUID
 }

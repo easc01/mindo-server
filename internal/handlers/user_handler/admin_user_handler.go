@@ -50,7 +50,7 @@ func getAdminUserByID(c *gin.Context) {
 	}
 
 	httputil.NewResponse(
-		http.StatusFound,
+		http.StatusAccepted,
 		user,
 	).Send(c)
 }

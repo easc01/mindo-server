@@ -196,5 +196,5 @@ func GetAdminUserByUserID(id uuid.UUID) (dto.AdminUserDataDTO, int, error) {
 		CreatedAt:         adminUser.CreatedAt.Time,
 		UpdatedBy:         adminUser.UpdatedBy.UUID,
 		UserType:          adminUser.UserType.UserType,
-	}, http.StatusFound, nil
+	}, http.StatusAccepted, nil
 }

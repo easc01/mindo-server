@@ -50,7 +50,7 @@ func getAppUserByID(c *gin.Context) {
 	}
 
 	httputil.NewResponse(
-		http.StatusFound,
+		http.StatusAccepted,
 		user,
 	).Send(c)
 }

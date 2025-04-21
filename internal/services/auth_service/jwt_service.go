@@ -46,7 +46,7 @@ func CreateAccessToken(id string, userId string, role models.UserType) (string, 
 }
 
 func CreateRefreshTokenByUserId(userId uuid.UUID) (models.UserToken, error) {
-	refreshToken := uuid.New().String() + uuid.New().String()
+	refreshToken := uuid.New()
 
 	userTokenParams := models.UpsertUserTokenParams{
 		UserID:       userId,

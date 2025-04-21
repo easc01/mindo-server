@@ -182,7 +182,7 @@ CREATE TABLE "user" (
 CREATE TABLE "user_token" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "user_id" uuid NOT NULL UNIQUE,
-    "refresh_token" TEXT NOT NULL,
+    "refresh_token" uuid NOT NULL UNIQUE,
     "expires_at" TIMESTAMP NOT NULL,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,

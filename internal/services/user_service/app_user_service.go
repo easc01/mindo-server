@@ -23,15 +23,15 @@ import (
 
 func GoogleAuthService(
 	c *gin.Context,
-	googleReq *dto.GoogleLoginRequest,
+	googleReq *dto.TokenDTO,
 ) (dto.AppUserDataDTO, int, error) {
 
-	payload, payloadErr := idtoken.Validate(c, googleReq.IDToken, config.GetConfig().GoogleClientId)
+	payload, payloadErr := idtoken.Validate(c, googleReq.AccessToken, config.GetConfig().GoogleClientId)
 	if payloadErr != nil {
 		logger.Log.Errorf(
 			"invalid app user token, %s, for token %s",
 			payloadErr,
-			googleReq.IDToken,
+			googleReq.AccessToken,
 		)
 		return dto.AppUserDataDTO{}, http.StatusBadRequest, payloadErr
 	}
@@ -106,7 +106,7 @@ func GoogleAuthService(
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          models.UserTypeAppUser,
-	}, http.StatusFound, nil
+	}, http.StatusAccepted, nil
 }
 
 func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, error) {
@@ -220,5 +220,5 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          appUser.UserType.UserType,
-	}, http.StatusFound, nil
+	}, http.StatusAccepted, nil
 }

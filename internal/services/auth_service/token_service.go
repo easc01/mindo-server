@@ -48,7 +48,7 @@ func IssueAuthTokens(c *gin.Context, userId uuid.UUID, role models.UserType) (st
 
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     constant.RefreshToken,
-		Value:    refreshToken.RefreshToken,
+		Value:    refreshToken.RefreshToken.String(),
 		HttpOnly: true,
 		Secure:   config.GetConfig().Env == config.Production,
 		Path:     route.GetRefreshRoute(),
@@ -59,20 +59,22 @@ func IssueAuthTokens(c *gin.Context, userId uuid.UUID, role models.UserType) (st
 	return accessToken, nil
 }
 
-func RefreshTokenService(c *gin.Context, refreshToken string) (dto.TokenResponse, int, error) {
+func RefreshTokenService(c *gin.Context, refreshToken string) (dto.TokenDTO, int, error) {
+	uuidRefreshToken, _ := uuid.Parse(refreshToken)
+	
 	// find refresh token
-	userToken, utErr := db.Queries.GetUserTokenByRefreshToken(c, refreshToken)
+	userToken, utErr := db.Queries.GetUserTokenByRefreshToken(c, uuidRefreshToken)
 	if utErr != nil {
 		if errors.Is(utErr, sql.ErrNoRows) {
 			logger.Log.Errorf("user token not found, %s", utErr.Error())
-			return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+			return dto.TokenDTO{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
 		}
 	}
 
 	// check if expired
 	if userToken.ExpiresAt.Before(time.Now()) {
 		logger.Log.Errorf("refresh token is expired")
-		return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+		return dto.TokenDTO{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
 	}
 
 	// create tokens
@@ -83,10 +85,10 @@ func RefreshTokenService(c *gin.Context, refreshToken string) (dto.TokenResponse
 			userToken.UserID.String(),
 			tokenErr.Error(),
 		)
-		return dto.TokenResponse{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
+		return dto.TokenDTO{}, http.StatusUnauthorized, fmt.Errorf(message.SignInAgain)
 	}
 
-	return dto.TokenResponse{
+	return dto.TokenDTO{
 		AccessToken: accessToken,
 	}, http.StatusAccepted, nil
 }

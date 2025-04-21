@@ -7,10 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type GoogleLoginRequest struct {
-	IDToken string `json:"idToken" binding:"required"`
-}
-
 type AppUserDataDTO struct {
 	AccessToken       string          `json:"accessToken,omitempty"`
 	UserID            uuid.UUID       `json:"userId"`
@@ -59,6 +55,6 @@ type AdminSignInParams struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
-type TokenResponse struct {
+type TokenDTO struct {
 	AccessToken string `json:"accessToken"`
 }

@@ -6,13 +6,13 @@ import (
 
 // Response represents a standardized API response
 type Response struct {
-	Status int `json:"-"`
+	StatusCode int `json:"statusCode"`
 	Data   any `json:"data"`
 }
 
 // ErrorResponse contains detailed error information
 type ErrorResponse struct {
-	Status  int    `json:"-"`
+	StatusCode  int    `json:"statusCode"`
 	Message string `json:"message"`
 	Details any    `json:"details,omitempty"`
 }
@@ -20,7 +20,7 @@ type ErrorResponse struct {
 // NewResponse creates a new response object
 func NewResponse(status int, data interface{}) *Response {
 	return &Response{
-		Status: status,
+		StatusCode: status,
 		Data:   data,
 	}
 }
@@ -28,7 +28,7 @@ func NewResponse(status int, data interface{}) *Response {
 // NewErrorResponse creates a new error response
 func NewErrorResponse(status int, errMessage string, details any) *ErrorResponse {
 	return &ErrorResponse{
-		Status:  status,
+		StatusCode:  status,
 		Message: errMessage,
 		Details: details,
 	}
@@ -36,10 +36,10 @@ func NewErrorResponse(status int, errMessage string, details any) *ErrorResponse
 
 // Send writes the response to the client
 func (r *Response) Send(c *gin.Context) {
-	c.JSON(r.Status, r)
+	c.JSON(r.StatusCode, r)
 }
 
 // Send writes the response to the client
 func (r *ErrorResponse) Send(c *gin.Context) {
-	c.JSON(r.Status, r)
+	c.JSON(r.StatusCode, r)
 }
