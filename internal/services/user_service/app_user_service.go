@@ -33,9 +33,8 @@ func GoogleAuthService(
 	)
 	if payloadErr != nil {
 		logger.Log.Errorf(
-			"invalid app user token, %s, for token %s",
+			"invalid app user token, %s",
 			payloadErr,
-			googleReq.AccessToken,
 		)
 		return dto.AppUserDataDTO{}, http.StatusBadRequest, payloadErr
 	}

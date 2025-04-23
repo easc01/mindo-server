@@ -19,9 +19,28 @@ func RegisterAppUserRoutes(rg *gin.RouterGroup) {
 	userRg := rg.Group(route.User, middleware.RequireRole(models.UserTypeAppUser))
 
 	{
+		userRg.GET(constant.Blank, getAppUser)
 		userRg.GET(constant.IdParam, getAppUserByID)
 	}
 
+}
+
+func getAppUser(c *gin.Context) {
+	user, ok := middleware.GetUser(c)
+
+	if user.AppUser == nil || !ok {
+		logger.Log.Errorf(message.NullAppUserContext)
+		httputil.NewErrorResponse(
+			http.StatusInternalServerError,
+			message.SomethingWentWrong,
+			message.NullAppUserContext,
+		).Send(c)
+	}
+
+	httputil.NewResponse(
+		http.StatusAccepted,
+		user.AppUser,
+	).Send(c)
 }
 
 func getAppUserByID(c *gin.Context) {

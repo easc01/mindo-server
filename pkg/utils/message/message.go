@@ -11,4 +11,6 @@ const (
 	InvalidToken         = "token is invalid"
 	InvalidSigningMethod = "invalid signing method"
 	SignInAgain          = "you have been logged out, sign-in again"
+	NullAppUserContext   = "app user context is missing"
+	NullAdminUserContext = "admin user context is missing"
 )

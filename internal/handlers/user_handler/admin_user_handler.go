@@ -19,9 +19,28 @@ func RegisterAdminUserRoutes(rg *gin.RouterGroup) {
 	adminProtectedRg := rg.Group(route.Admin, middleware.RequireRole(models.UserTypeAdminUser))
 
 	{
+		adminProtectedRg.GET(constant.Blank, getAdminUser)
 		adminProtectedRg.GET(constant.IdParam, getAdminUserByID)
 	}
 
+}
+
+func getAdminUser(c *gin.Context) {
+	user, ok := middleware.GetUser(c)
+
+	if user.AdminUser == nil || !ok {
+		logger.Log.Errorf(message.NullAdminUserContext)
+		httputil.NewErrorResponse(
+			http.StatusInternalServerError,
+			message.SomethingWentWrong,
+			message.NullAdminUserContext,
+		).Send(c)
+	}
+
+	httputil.NewResponse(
+		http.StatusAccepted,
+		user.AdminUser,
+	).Send(c)
 }
 
 func getAdminUserByID(c *gin.Context) {
