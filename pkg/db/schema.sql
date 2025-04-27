@@ -23,12 +23,12 @@ CREATE TABLE "playlist" (
 
 -- user saved playlist
 CREATE TABLE "user_playlist" (
-    "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "user_id" uuid NOT NULL,
     "playlist_id" uuid NOT NULL,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-    "updated_by" uuid
+    "updated_by" uuid,
+    PRIMARY KEY ("user_id", "playlist_id")
 );
 
 -- Topic Table
@@ -82,17 +82,6 @@ CREATE TABLE "watched_video" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "user_id" uuid NOT NULL,
     "youtube_video_id" uuid NOT NULL,
-    "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-    "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-    "updated_by" uuid
-);
-
--- Watched Playlist Table
-CREATE TABLE "watched_playlist" (
-    "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
-    "user_id" uuid NOT NULL,
-    "playlist_id" uuid NOT NULL,
-    "progress" int,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "updated_by" uuid
@@ -280,12 +269,6 @@ ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
 ALTER TABLE "watched_video"
 ADD FOREIGN KEY ("youtube_video_id") REFERENCES "youtube_video" ("id");
-
-ALTER TABLE "watched_playlist"
-ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
-
-ALTER TABLE "watched_playlist"
-ADD FOREIGN KEY ("playlist_id") REFERENCES "playlist" ("id");
 
 ALTER TABLE "quiz_question"
 ADD FOREIGN KEY ("quiz_id") REFERENCES "quiz" ("id");

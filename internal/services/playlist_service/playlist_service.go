@@ -1,12 +1,14 @@
 package playlistservice
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
 	playlistrepository "github.com/easc01/mindo-server/internal/repository/playlist_repository"
 	interestservice "github.com/easc01/mindo-server/internal/services/interest_service"
@@ -213,6 +215,35 @@ func GetPlaylistWithTopics(
 		}
 		logger.Log.Errorf("failed to get playlist of id %s, %s", playlistID, err.Error())
 		return dto.PlaylistDetailsDTO{}, http.StatusInternalServerError, err
+	}
+
+	// Clone necessary data (user)
+	user, ok := middleware.GetUser(c)
+	if ok && user.AppUser != nil {
+		appUser := user.AppUser
+		go func(appUserID uuid.UUID, playlistID uuid.UUID) {
+			ctx := context.Background()
+
+			// Update views
+			if err := db.Queries.UpdatePlaylistViewCountById(ctx, models.UpdatePlaylistViewCountByIdParams{
+				ID: playlistID,
+				Views: sql.NullInt32{
+					Int32: 1,
+					Valid: true,
+				},
+			}); err != nil {
+				logger.Log.Errorf("failed to update playlist views: %v", err)
+			}
+
+			// Create user_playlist
+			if _, err := db.Queries.CreateUserPlaylist(ctx, models.CreateUserPlaylistParams{
+				UserID:     appUserID,
+				PlaylistID: playlistID,
+				UpdatedBy:  util.GetNullUUID(appUserID),
+			}); err != nil {
+				logger.Log.Errorf("failed to create user_playlist: %v", err)
+			}
+		}(appUser.UserID, playlistID)
 	}
 
 	// Return the playlist with topics

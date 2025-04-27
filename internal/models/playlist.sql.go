@@ -66,3 +66,63 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 	)
 	return i, err
 }
+
+const getPlaylistWithTopics = `-- name: GetPlaylistWithTopics :one
+SELECT p.id, p.name, p.description, p.code, p.thumbnail_url, p.views, p.created_at, p.updated_at, p.updated_by, COALESCE(
+        json_agg (
+            t.name
+            ORDER BY t.number ASC
+        ), '[]'
+    ) AS topics
+FROM playlist p
+    LEFT JOIN topic t ON p.id = t.playlist_id
+WHERE
+    p.id = $1
+GROUP BY
+    p.id
+`
+
+type GetPlaylistWithTopicsRow struct {
+	ID           uuid.UUID
+	Name         sql.NullString
+	Description  sql.NullString
+	Code         string
+	ThumbnailUrl sql.NullString
+	Views        sql.NullInt32
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	UpdatedBy    uuid.NullUUID
+	Topics       interface{}
+}
+
+func (q *Queries) GetPlaylistWithTopics(ctx context.Context, id uuid.UUID) (GetPlaylistWithTopicsRow, error) {
+	row := q.db.QueryRowContext(ctx, getPlaylistWithTopics, id)
+	var i GetPlaylistWithTopicsRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Code,
+		&i.ThumbnailUrl,
+		&i.Views,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UpdatedBy,
+		&i.Topics,
+	)
+	return i, err
+}
+
+const updatePlaylistViewCountById = `-- name: UpdatePlaylistViewCountById :exec
+UPDATE playlist SET views = views + $2 WHERE id = $1
+`
+
+type UpdatePlaylistViewCountByIdParams struct {
+	ID    uuid.UUID
+	Views sql.NullInt32
+}
+
+func (q *Queries) UpdatePlaylistViewCountById(ctx context.Context, arg UpdatePlaylistViewCountByIdParams) error {
+	_, err := q.db.ExecContext(ctx, updatePlaylistViewCountById, arg.ID, arg.Views)
+	return err
+}

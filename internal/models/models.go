@@ -221,7 +221,6 @@ type User struct {
 }
 
 type UserPlaylist struct {
-	ID         uuid.UUID
 	UserID     uuid.UUID
 	PlaylistID uuid.UUID
 	UpdatedAt  sql.NullTime
@@ -238,16 +237,6 @@ type UserToken struct {
 	UpdatedAt    sql.NullTime
 	CreatedAt    sql.NullTime
 	UpdatedBy    uuid.NullUUID
-}
-
-type WatchedPlaylist struct {
-	ID         uuid.UUID
-	UserID     uuid.UUID
-	PlaylistID uuid.UUID
-	Progress   sql.NullInt32
-	UpdatedAt  sql.NullTime
-	CreatedAt  sql.NullTime
-	UpdatedBy  uuid.NullUUID
 }
 
 type WatchedVideo struct {

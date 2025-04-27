@@ -19,21 +19,18 @@ VALUES (
     ) RETURNING *;
 
 -- name: GetPlaylistWithTopics :one
-SELECT 
-    p.id, 
-    p.name, 
-    p.description, 
-    p.code, 
-    p.thumbnail_url, 
-    p.views, 
-    p.created_at, 
-    p.updated_at, 
-    p.updated_by,
-    COALESCE(
-        json_agg(t.name ORDER BY t.number ASC), 
-        '[]'
+SELECT p.id, p.name, p.description, p.code, p.thumbnail_url, p.views, p.created_at, p.updated_at, p.updated_by, COALESCE(
+        json_agg (
+            t.name
+            ORDER BY t.number ASC
+        ), '[]'
     ) AS topics
 FROM playlist p
-LEFT JOIN topic t ON p.id = t.playlist_id
-WHERE p.id = $1
-GROUP BY p.id;
+    LEFT JOIN topic t ON p.id = t.playlist_id
+WHERE
+    p.id = $1
+GROUP BY
+    p.id;
+
+-- name: UpdatePlaylistViewCountById :exec
+UPDATE playlist SET views = views + $2 WHERE id = $1;
