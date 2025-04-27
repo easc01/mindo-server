@@ -12,7 +12,7 @@ CREATE TABLE "playlist" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "interest_id" uuid,
     "name" VARCHAR(255),
-    "code" CHAR(6) NOT NULL UNIQUE,
+    "code" TEXT NOT NULL UNIQUE,
     "description" TEXT,
     "views" int,
     "thumbnail_url" TEXT,

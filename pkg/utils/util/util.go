@@ -39,3 +39,9 @@ func GenerateUsername() string {
 
 	return username
 }
+
+func generateHexCode(num int) string {
+	// Format the integer as a hexadecimal string with padding to ensure it's 6 characters long
+	hexCode := fmt.Sprintf("%06X", num)
+	return hexCode
+}
