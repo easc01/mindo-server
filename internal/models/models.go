@@ -86,7 +86,6 @@ type AppUserInterest struct {
 	ID         uuid.UUID
 	AppUserID  uuid.UUID
 	InterestID uuid.NullUUID
-	Name       sql.NullString
 	UpdatedAt  sql.NullTime
 	CreatedAt  sql.NullTime
 	UpdatedBy  uuid.NullUUID
@@ -132,8 +131,11 @@ type Message struct {
 
 type Playlist struct {
 	ID           uuid.UUID
+	InterestID   uuid.NullUUID
 	Name         sql.NullString
+	Code         string
 	Description  sql.NullString
+	Views        sql.NullInt32
 	ThumbnailUrl sql.NullString
 	UpdatedAt    sql.NullTime
 	CreatedAt    sql.NullTime

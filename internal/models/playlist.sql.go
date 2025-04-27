@@ -25,7 +25,7 @@ VALUES (
         $2, -- Description
         $3, -- Thumbnail URL
         $4 -- Updated By
-    ) RETURNING id, name, description, thumbnail_url, updated_at, created_at, updated_by
+    ) RETURNING id, interest_id, name, code, description, views, thumbnail_url, updated_at, created_at, updated_by
 `
 
 type CreatePlaylistParams struct {
@@ -46,8 +46,11 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 	var i Playlist
 	err := row.Scan(
 		&i.ID,
+		&i.InterestID,
 		&i.Name,
+		&i.Code,
 		&i.Description,
+		&i.Views,
 		&i.ThumbnailUrl,
 		&i.UpdatedAt,
 		&i.CreatedAt,
@@ -57,7 +60,7 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 }
 
 const getAllPlaylists = `-- name: GetAllPlaylists :many
-SELECT id, name, description, thumbnail_url, updated_at, created_at, updated_by FROM playlist
+SELECT id, interest_id, name, code, description, views, thumbnail_url, updated_at, created_at, updated_by FROM playlist
 `
 
 // Fetch all playlists
@@ -72,8 +75,11 @@ func (q *Queries) GetAllPlaylists(ctx context.Context) ([]Playlist, error) {
 		var i Playlist
 		if err := rows.Scan(
 			&i.ID,
+			&i.InterestID,
 			&i.Name,
+			&i.Code,
 			&i.Description,
+			&i.Views,
 			&i.ThumbnailUrl,
 			&i.UpdatedAt,
 			&i.CreatedAt,

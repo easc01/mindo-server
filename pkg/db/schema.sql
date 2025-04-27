@@ -1,11 +1,20 @@
--- Ensure UUID extension is enabled
+-- EXTENSTIONS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- SEQUENCES
+CREATE SEQUENCE playlist_count_seq 
+  START 0 
+  MINVALUE 0;
+
 
 -- Playlist Table
 CREATE TABLE "playlist" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    "interest_id" uuid,
     "name" VARCHAR(255),
+    "code" CHAR(6) NOT NULL UNIQUE,
     "description" TEXT,
+    "views" int,
     "thumbnail_url" TEXT,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -195,7 +204,6 @@ CREATE TABLE "app_user_interest" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "app_user_id" uuid NOT NULL,
     "interest_id" uuid,
-    "name" VARCHAR(255),
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "updated_by" uuid
@@ -230,15 +238,19 @@ CREATE TABLE "admin_user" (
     "updated_by" uuid
 );
 
+-- Master Interest Table
 CREATE TABLE "interest" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
-    "name" VARCHAR(255),
+    "name" VARCHAR(255) UNIQUE,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "updated_by" uuid
 );
 
 -- Add Foreign Keys
+ALTER TABLE "playlist"
+ADD FOREIGN KEY ("interest_id") REFERENCES "interest" ("id");
+
 ALTER TABLE "user_playlist"
 ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
