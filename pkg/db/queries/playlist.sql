@@ -18,6 +18,7 @@ VALUES (
         $6 -- Updated By
     ) RETURNING *;
 
+-- unused, left for reference
 -- name: GetPlaylistWithTopics :one
 SELECT p.id, p.name, p.description, p.code, p.thumbnail_url, p.views, p.created_at, p.updated_at, p.updated_by, COALESCE(
         json_agg (
@@ -34,3 +35,20 @@ GROUP BY
 
 -- name: UpdatePlaylistViewCountById :exec
 UPDATE playlist SET views = views + $2 WHERE id = $1;
+
+-- name: GetAllPlaylistsPreviews :many
+SELECT
+    p.id,
+    p.name,
+    p.description,
+    p.code,
+    p.thumbnail_url,
+    p.interest_id,
+    p.views,
+    p.created_at,
+    p.updated_at,
+    p.updated_by,
+    COALESCE(COUNT(t.id), 0) AS topics_count
+FROM playlist p
+LEFT JOIN topic t ON t.playlist_id = p.id
+GROUP BY p.id;

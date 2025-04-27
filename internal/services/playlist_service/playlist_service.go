@@ -260,3 +260,30 @@ func GetPlaylistWithTopics(
 		Topics:       playlist.Topics,
 	}, http.StatusAccepted, nil
 }
+
+func GetAllPlaylistPreviews(c *gin.Context) ([]dto.PlaylistPreviewDTO, int, error) {
+	playlists, err := db.Queries.GetAllPlaylistsPreviews(c)
+	if err != nil {
+		logger.Log.Debug("failed to get playlist previews")
+		return []dto.PlaylistPreviewDTO{}, http.StatusInternalServerError, err
+	}
+
+	var serializedPlaylist []dto.PlaylistPreviewDTO
+	for _, playlist := range playlists {
+		serializedPlaylist = append(serializedPlaylist, dto.PlaylistPreviewDTO{
+			ID:           playlist.ID.String(),
+			Name:         playlist.Name.String,
+			Description:  playlist.Description.String,
+			InterestID:   playlist.InterestID.UUID.String(),
+			ThumbnailURL: playlist.ThumbnailUrl.String,
+			Views:        int(playlist.Views.Int32),
+			Code:         playlist.Code,
+			CreatedAt:    playlist.CreatedAt.Time,
+			UpdatedAt:    playlist.UpdatedAt.Time,
+			UpdatedBy:    playlist.UpdatedBy.UUID.String(),
+			TopicsCount:  int(playlist.TopicsCount.(int64)),
+		})
+	}
+
+	return serializedPlaylist, http.StatusAccepted, nil
+}

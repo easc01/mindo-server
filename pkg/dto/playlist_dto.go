@@ -23,3 +23,17 @@ type PlaylistDetailsDTO struct {
 	UpdatedBy    string    `json:"updatedBy"`
 	Topics       []string  `json:"topics"`
 }
+
+type PlaylistPreviewDTO struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	InterestID   string    `json:"interestId"`
+	ThumbnailURL string    `json:"thumbnailUrl"`
+	Views        int       `json:"views"`
+	Code         string    `json:"code"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	UpdatedBy    string    `json:"updatedBy"`
+	TopicsCount  int       `json:"topicsCount"`
+}

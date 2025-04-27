@@ -26,11 +26,14 @@ func RegisterPlaylists(rg *gin.RouterGroup) {
 			CreatePlaylistHandler,
 		)
 
-		// playlistRg.GET(
-		// 	constant.Blank,
-		// 	middleware.RequireRole(models.UserTypeAppUser),
-		// 	GetAppUserInterestedPlaylistsHandler,
-		// )
+		playlistRg.GET(
+			constant.Blank,
+			middleware.RequireRole(
+				models.UserTypeAppUser,
+				models.UserTypeAdminUser,
+			), // TODO, app user to be used later to map Playlist by user interests
+			GetAllPlaylistPreviews,
+		)
 
 		playlistRg.GET(
 			constant.IdParam,
@@ -106,8 +109,22 @@ func CreatePlaylistHandler(c *gin.Context) {
 	).Send(c)
 }
 
-func GetAppUserInterestedPlaylistsHandler(c *gin.Context) {
+func GetAllPlaylistPreviews(c *gin.Context) {
+	playlists, statusCode, err := playlistservice.GetAllPlaylistPreviews(c)
+	if err != nil {
+		logger.Log.Debug("failed to get playlist previews")
+		httputil.NewErrorResponse(
+			statusCode,
+			err.Error(),
+			nil,
+		).Send(c)
+		return
+	}
 
+	httputil.NewResponse(
+		statusCode,
+		playlists,
+	).Send(c)
 }
 
 func GetPlaylistByIdHandler(c *gin.Context) {
