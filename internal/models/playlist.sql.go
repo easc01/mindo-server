@@ -18,13 +18,17 @@ INSERT INTO
         name,
         description,
         thumbnail_url,
+        code,
+        interest_id,
         updated_by
     )
 VALUES (
         $1, -- Name
         $2, -- Description
         $3, -- Thumbnail URL
-        $4 -- Updated By
+        $4, -- unique hexcode of playlist
+        $5, -- domain/interest id
+        $6 -- Updated By
     ) RETURNING id, interest_id, name, code, description, views, thumbnail_url, updated_at, created_at, updated_by
 `
 
@@ -32,6 +36,8 @@ type CreatePlaylistParams struct {
 	Name         sql.NullString
 	Description  sql.NullString
 	ThumbnailUrl sql.NullString
+	Code         string
+	InterestID   uuid.NullUUID
 	UpdatedBy    uuid.NullUUID
 }
 
@@ -41,6 +47,8 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 		arg.Name,
 		arg.Description,
 		arg.ThumbnailUrl,
+		arg.Code,
+		arg.InterestID,
 		arg.UpdatedBy,
 	)
 	var i Playlist
@@ -59,81 +67,25 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 	return i, err
 }
 
-const getAllPlaylists = `-- name: GetAllPlaylists :many
-SELECT id, interest_id, name, code, description, views, thumbnail_url, updated_at, created_at, updated_by FROM playlist
-`
-
-// Fetch all playlists
-func (q *Queries) GetAllPlaylists(ctx context.Context) ([]Playlist, error) {
-	rows, err := q.db.QueryContext(ctx, getAllPlaylists)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Playlist
-	for rows.Next() {
-		var i Playlist
-		if err := rows.Scan(
-			&i.ID,
-			&i.InterestID,
-			&i.Name,
-			&i.Code,
-			&i.Description,
-			&i.Views,
-			&i.ThumbnailUrl,
-			&i.UpdatedAt,
-			&i.CreatedAt,
-			&i.UpdatedBy,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getPlaylistByID = `-- name: GetPlaylistByID :one
-SELECT
-    id,
-    name,
-    description,
-    thumbnail_url,
-    updated_by,
-    created_at,
-    updated_at
-FROM playlist
-WHERE
-    id = $1
+SELECT id, interest_id, name, code, description, views, thumbnail_url, updated_at, created_at, updated_by FROM playlist WHERE id = $1
 `
-
-type GetPlaylistByIDRow struct {
-	ID           uuid.UUID
-	Name         sql.NullString
-	Description  sql.NullString
-	ThumbnailUrl sql.NullString
-	UpdatedBy    uuid.NullUUID
-	CreatedAt    sql.NullTime
-	UpdatedAt    sql.NullTime
-}
 
 // Get a playlist by ID
-func (q *Queries) GetPlaylistByID(ctx context.Context, id uuid.UUID) (GetPlaylistByIDRow, error) {
+func (q *Queries) GetPlaylistByID(ctx context.Context, id uuid.UUID) (Playlist, error) {
 	row := q.db.QueryRowContext(ctx, getPlaylistByID, id)
-	var i GetPlaylistByIDRow
+	var i Playlist
 	err := row.Scan(
 		&i.ID,
+		&i.InterestID,
 		&i.Name,
+		&i.Code,
 		&i.Description,
+		&i.Views,
 		&i.ThumbnailUrl,
-		&i.UpdatedBy,
-		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CreatedAt,
+		&i.UpdatedBy,
 	)
 	return i, err
 }

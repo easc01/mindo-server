@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getAllInterest = `-- name: GetAllInterest :many
@@ -40,4 +41,21 @@ func (q *Queries) GetAllInterest(ctx context.Context) ([]Interest, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getInterestByName = `-- name: GetInterestByName :one
+SELECT id, name, updated_at, created_at, updated_by FROM interest WHERE name = $1
+`
+
+func (q *Queries) GetInterestByName(ctx context.Context, name sql.NullString) (Interest, error) {
+	row := q.db.QueryRowContext(ctx, getInterestByName, name)
+	var i Interest
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+		&i.UpdatedBy,
+	)
+	return i, err
 }

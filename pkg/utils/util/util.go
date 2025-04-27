@@ -22,6 +22,11 @@ func GetSQLNullString(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: s != constant.Blank}
 }
 
+// Returns sql.NullString for a string
+func GetNullUUID(s uuid.UUID) uuid.NullUUID {
+	return uuid.NullUUID{UUID: s, Valid: true}
+}
+
 // ConvertStringToUUID converts a string to a uuid.UUID
 func ConvertStringToUUID(id string) uuid.UUID {
 	parsedId, _ := uuid.Parse(id)

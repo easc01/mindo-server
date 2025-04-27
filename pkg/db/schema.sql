@@ -14,7 +14,7 @@ CREATE TABLE "playlist" (
     "name" VARCHAR(255),
     "code" TEXT NOT NULL UNIQUE,
     "description" TEXT,
-    "views" int,
+    "views" int DEFAULT 0,
     "thumbnail_url" TEXT,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,

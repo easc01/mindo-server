@@ -1,6 +1,8 @@
 package interestservice
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -9,6 +11,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -75,4 +78,22 @@ func GetMasterInterestList(c *gin.Context) ([]dto.GetInterestDTO, int, error) {
 	}
 
 	return serializedInterests, http.StatusAccepted, nil
+}
+
+func GetInterestByName(c *gin.Context, interestName string) (models.Interest, int, error) {
+	interest, intErr := db.Queries.GetInterestByName(c, util.GetSQLNullString(interestName))
+	if intErr != nil {
+		if errors.Is(intErr, sql.ErrNoRows) {
+			logger.Log.Errorf("interest of name %s not found", interestName)
+			return models.Interest{}, http.StatusNotFound, fmt.Errorf(
+				"interest of name %s not found",
+				interestName,
+			)
+		}
+
+		logger.Log.Errorf("failed to get interest of name %s", interestName)
+		return models.Interest{}, http.StatusInternalServerError, intErr
+	}
+
+	return interest, http.StatusAccepted, nil
 }
