@@ -7,6 +7,7 @@ import (
 
 	"github.com/easc01/mindo-server/internal/models"
 	"github.com/easc01/mindo-server/pkg/db"
+	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -52,12 +53,12 @@ func UpsertIntoMasterInterest(c *gin.Context, interests []string, adminId string
 	return http.StatusAccepted, nil
 }
 
-func GetMasterInterestList(c *gin.Context) ([]string, int, error) {
+func GetMasterInterestList(c *gin.Context) ([]dto.GetInterestDTO, int, error) {
 	interests, intErr := db.Queries.GetAllInterest(c)
 
 	if intErr != nil {
 		logger.Log.Errorf("failed to get master interests, %s", intErr.Error())
-		return []string{}, http.StatusInternalServerError, intErr
+		return []dto.GetInterestDTO{}, http.StatusInternalServerError, intErr
 	}
 
 	if interests == nil {
@@ -65,9 +66,12 @@ func GetMasterInterestList(c *gin.Context) ([]string, int, error) {
 	}
 
 	// serialize response
-	serializedInterests := make([]string, len(interests))
+	serializedInterests := make([]dto.GetInterestDTO, len(interests))
 	for i, interest := range interests {
-		serializedInterests[i] = interest.Name.String
+		serializedInterests[i] = dto.GetInterestDTO{
+			ID:   interest.ID.String(),
+			Name: interest.Name.String,
+		}
 	}
 
 	return serializedInterests, http.StatusAccepted, nil

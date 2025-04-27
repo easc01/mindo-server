@@ -5,7 +5,7 @@ const (
 	User      = "/users"
 	Admin     = "/admins"
 	Auth      = "/auth"
-	Interest  = "/interest"
+	Interest  = "/interests"
 	Refresh   = "/refresh"
 	Google    = "/google"
 	Playlists = "/playlists"
