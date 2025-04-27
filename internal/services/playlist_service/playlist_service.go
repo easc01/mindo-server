@@ -1,7 +1,10 @@
 package playlistservice
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -41,7 +44,8 @@ func ProcessPlaylistCreationByAdmin(
 
 	// Track the current sequence value before performing any operations
 	var originalSequenceValue int32
-	err = tx.QueryRowContext(c, "SELECT last_value FROM playlist_count_seq").Scan(&originalSequenceValue)
+	err = tx.QueryRowContext(c, "SELECT last_value FROM playlist_count_seq").
+		Scan(&originalSequenceValue)
 	if err != nil {
 		logger.Log.Errorf("failed to get current sequence value: %s", err.Error())
 		_ = tx.Rollback()
@@ -192,4 +196,102 @@ func BatchInsertPlaylistTopic(
 	}
 
 	return insertedTopics, http.StatusCreated, nil
+}
+
+func GetPlaylistWithTopics(
+	c *gin.Context,
+	playlistID uuid.UUID,
+) (dto.PlaylistDetailsDTO, int, error) {
+	playlist, err := GetPlaylistWithTopicsQuery(c, playlistID)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			logger.Log.Errorf("playlist of id %s not found", playlistID)
+			return dto.PlaylistDetailsDTO{}, http.StatusNotFound, fmt.Errorf(
+				"playlist of id %s not found",
+				playlistID,
+			)
+		}
+		logger.Log.Errorf("failed to get playlist of id %s, %s", playlistID, err.Error())
+		return dto.PlaylistDetailsDTO{}, http.StatusInternalServerError, err
+	}
+
+	// Return the playlist with topics
+	return dto.PlaylistDetailsDTO{
+		ID:           playlist.ID.String(),
+		Name:         playlist.Name.String,
+		Description:  playlist.Description.String,
+		Code:         playlist.Code,
+		ThumbnailURL: playlist.ThumbnailUrl.String,
+		Views:        int(playlist.Views.Int32),
+		CreatedAt:    playlist.CreatedAt.Time,
+		UpdatedAt:    playlist.UpdatedAt.Time,
+		UpdatedBy:    playlist.UpdatedBy.UUID.String(),
+		Topics:       playlist.Topics,
+	}, http.StatusAccepted, nil
+}
+
+type GetPlaylistWithTopicsRow struct {
+	ID           uuid.UUID
+	Name         sql.NullString
+	Description  sql.NullString
+	Code         string
+	ThumbnailUrl sql.NullString
+	Views        sql.NullInt32
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	UpdatedBy    uuid.NullUUID
+	Topics       []string
+}
+
+func GetPlaylistWithTopicsQuery(
+	ctx context.Context,
+	id uuid.UUID,
+) (GetPlaylistWithTopicsRow, error) {
+	const getPlaylistWithTopics = `
+		SELECT 
+				p.id, 
+				p.name, 
+				p.description, 
+				p.code, 
+				p.thumbnail_url, 
+				p.views, 
+				p.created_at, 
+				p.updated_at, 
+				p.updated_by,
+				COALESCE(
+						json_agg(t.name ORDER BY t.number ASC), 
+						'[]'
+				) AS topics
+		FROM playlist p
+		LEFT JOIN topic t ON p.id = t.playlist_id
+		WHERE p.id = $1
+		GROUP BY p.id
+	`
+
+	row := db.DB.QueryRowContext(ctx, getPlaylistWithTopics, id)
+	var i GetPlaylistWithTopicsRow
+	var topicsJSON string
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Code,
+		&i.ThumbnailUrl,
+		&i.Views,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UpdatedBy,
+		&topicsJSON,
+	)
+	if err != nil {
+		return i, err
+	}
+
+	// Unmarshal the JSON array into Topics
+	if err := json.Unmarshal([]byte(topicsJSON), &i.Topics); err != nil {
+		return i, err
+	}
+
+	return i, nil
 }

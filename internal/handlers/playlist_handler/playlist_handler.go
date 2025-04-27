@@ -13,6 +13,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func RegisterPlaylists(rg *gin.RouterGroup) {
@@ -31,11 +32,11 @@ func RegisterPlaylists(rg *gin.RouterGroup) {
 		// 	GetAppUserInterestedPlaylistsHandler,
 		// )
 
-		// playlistRg.GET(
-		// 	constant.IdParam,
-		// 	middleware.RequireRole(models.UserTypeAppUser),
-		// 	GetPlaylistByIdHandler,
-		// )
+		playlistRg.GET(
+			constant.IdParam,
+			middleware.RequireRole(models.UserTypeAppUser, models.UserTypeAdminUser),
+			GetPlaylistByIdHandler,
+		)
 
 		// playlistRg.GET(
 		// 	constant.IdParam+"/videos",
@@ -110,7 +111,32 @@ func GetAppUserInterestedPlaylistsHandler(c *gin.Context) {
 }
 
 func GetPlaylistByIdHandler(c *gin.Context) {
+	playlistId := c.Param("id")
 
+	parsedPlaylistId, err := uuid.Parse(playlistId)
+	if err != nil {
+		httputil.NewErrorResponse(
+			http.StatusBadRequest,
+			message.InvalidUserID,
+			err.Error(),
+		).Send(c)
+		return
+	}
+
+	playlistData, statusCode, err := playlistservice.GetPlaylistWithTopics(c, parsedPlaylistId)
+	if err != nil {
+		httputil.NewErrorResponse(
+			statusCode,
+			err.Error(),
+			nil,
+		).Send(c)
+		return
+	}
+
+	httputil.NewResponse(
+		statusCode,
+		playlistData,
+	).Send(c)
 }
 
 func GetPlaylistTopicVideosHandler(c *gin.Context) {

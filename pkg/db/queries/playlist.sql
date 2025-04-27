@@ -18,6 +18,22 @@ VALUES (
         $6 -- Updated By
     ) RETURNING *;
 
--- Get a playlist by ID
--- name: GetPlaylistByID :one
-SELECT * FROM playlist WHERE id = $1;
+-- name: GetPlaylistWithTopics :one
+SELECT 
+    p.id, 
+    p.name, 
+    p.description, 
+    p.code, 
+    p.thumbnail_url, 
+    p.views, 
+    p.created_at, 
+    p.updated_at, 
+    p.updated_by,
+    COALESCE(
+        json_agg(t.name ORDER BY t.number ASC), 
+        '[]'
+    ) AS topics
+FROM playlist p
+LEFT JOIN topic t ON p.id = t.playlist_id
+WHERE p.id = $1
+GROUP BY p.id;

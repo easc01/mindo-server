@@ -66,26 +66,3 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 	)
 	return i, err
 }
-
-const getPlaylistByID = `-- name: GetPlaylistByID :one
-SELECT id, interest_id, name, code, description, views, thumbnail_url, updated_at, created_at, updated_by FROM playlist WHERE id = $1
-`
-
-// Get a playlist by ID
-func (q *Queries) GetPlaylistByID(ctx context.Context, id uuid.UUID) (Playlist, error) {
-	row := q.db.QueryRowContext(ctx, getPlaylistByID, id)
-	var i Playlist
-	err := row.Scan(
-		&i.ID,
-		&i.InterestID,
-		&i.Name,
-		&i.Code,
-		&i.Description,
-		&i.Views,
-		&i.ThumbnailUrl,
-		&i.UpdatedAt,
-		&i.CreatedAt,
-		&i.UpdatedBy,
-	)
-	return i, err
-}
