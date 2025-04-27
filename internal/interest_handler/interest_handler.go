@@ -1,9 +1,13 @@
 package interesthandler
 
 import (
+	"net/http"
+
 	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
 	interestservice "github.com/easc01/mindo-server/internal/services/interest_service"
+	"github.com/easc01/mindo-server/pkg/dto"
+	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
 	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
@@ -25,7 +29,41 @@ func RegisterInterest(rg *gin.RouterGroup) {
 }
 
 func upsertMasterInterestHandler(c *gin.Context) {
-	
+	req, ok := httputil.GetRequestBody[dto.UpsertInterestDTO](c)
+	if !ok {
+		return
+	}
+
+	user, ok := middleware.GetUser(c)
+	if user.AdminUser == nil || !ok {
+		logger.Log.Errorf(message.NullAppUserContext)
+		httputil.NewErrorResponse(
+			http.StatusInternalServerError,
+			message.NullAdminUserContext,
+			nil,
+		).Send(c)
+		return
+	}
+
+	statusCode, upsertErr := interestservice.UpsertIntoMasterInterest(
+		c,
+		req.Interests,
+		user.AdminUser.UserID.String(),
+	)
+
+	if upsertErr != nil {
+		httputil.NewErrorResponse(
+			statusCode,
+			upsertErr.Error(),
+			nil,
+		).Send(c)
+		return
+	}
+
+	httputil.NewResponse(
+		statusCode,
+		"interest master list updated",
+	).Send(c)
 }
 
 func getMasterInterestListHandler(c *gin.Context) {

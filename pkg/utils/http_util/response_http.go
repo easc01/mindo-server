@@ -33,4 +33,5 @@ func NewErrorResponse(status int, errMessage string, data any) *Response {
 // Send writes the response to the client
 func (r *Response) Send(c *gin.Context) {
 	c.JSON(r.StatusCode, r)
+	c.Abort()
 }
