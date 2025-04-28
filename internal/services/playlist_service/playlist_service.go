@@ -305,7 +305,7 @@ func GetVideosByTopicId(c *gin.Context, topicId uuid.UUID) ([]dto.VideoDataDTO, 
 	}
 
 	if len(videos) == 0 {
-		newVideos, err := FetchAndSaveNewVideos(c, topic)
+		newVideos, err := FetchAndSaveNewVideos(c, topic, topic.PlaylistName.String)
 		if err != nil {
 			return []dto.VideoDataDTO{}, http.StatusInternalServerError, err
 		}
@@ -318,6 +318,7 @@ func GetVideosByTopicId(c *gin.Context, topicId uuid.UUID) ([]dto.VideoDataDTO, 
 func FetchAndSaveNewVideos(
 	c *gin.Context,
 	topic topicrepository.GetTopicByIDWithVideosRow,
+	playlistName string,
 ) ([]dto.VideoDataDTO, error) {
 
 	topicId := topic.ID
@@ -335,7 +336,10 @@ func FetchAndSaveNewVideos(
 		userID = user.AdminUser.UserID
 	}
 
-	videos, err := youtubeservice.SearchVideosByTopic(topicName, 5)
+	videos, err := youtubeservice.SearchVideosByTopic(
+		fmt.Sprintf("%s in %s", topicName, playlistName),
+		10,
+	)
 
 	if err != nil {
 		logger.Log.Errorf("failed to search %s on youtube, %s", topicName, err.Error())

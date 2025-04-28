@@ -11,14 +11,15 @@ import (
 )
 
 type GetTopicByIDWithVideosRow struct {
-	ID         uuid.UUID
-	Name       sql.NullString
-	Number     sql.NullInt32
-	PlaylistID uuid.UUID
-	CreatedAt  sql.NullTime
-	UpdatedAt  sql.NullTime
-	UpdatedBy  uuid.NullUUID
-	Videos     []dto.VideoDataDTO
+	ID           uuid.UUID
+	Name         sql.NullString
+	Number       sql.NullInt32
+	PlaylistID   uuid.UUID
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	UpdatedBy    uuid.NullUUID
+	PlaylistName sql.NullString
+	Videos       []dto.VideoDataDTO
 }
 
 func GetTopicByIDWithVideos(ctx context.Context, id uuid.UUID) (GetTopicByIDWithVideosRow, error) {
@@ -32,6 +33,7 @@ func GetTopicByIDWithVideos(ctx context.Context, id uuid.UUID) (GetTopicByIDWith
 			t.created_at,
 			t.updated_at,
 			t.updated_by,
+			p.name as playlist_name,
 			COALESCE(
 				JSON_AGG(
 					JSON_BUILD_OBJECT(
@@ -52,10 +54,10 @@ func GetTopicByIDWithVideos(ctx context.Context, id uuid.UUID) (GetTopicByIDWith
 			) AS videos
 		FROM
 			topic t
-		LEFT JOIN 
-			youtube_video yv ON t.id = yv.topic_id
+		LEFT JOIN youtube_video yv ON t.id = yv.topic_id
+		LEFT JOIN playlist p ON p.id = t.playlist_id
 		WHERE t.id = $1
-		GROUP BY t.id
+		GROUP BY t.id, t.name, t.number, t.playlist_id, t.created_at, t.updated_at, t.updated_by, p.name
 	`
 
 	row := db.DB.QueryRowContext(ctx, query, id)
@@ -69,6 +71,7 @@ func GetTopicByIDWithVideos(ctx context.Context, id uuid.UUID) (GetTopicByIDWith
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UpdatedBy,
+		&i.PlaylistName,
 		&videosJson,
 	)
 

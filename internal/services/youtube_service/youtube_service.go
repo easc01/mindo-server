@@ -39,8 +39,7 @@ func SearchVideosByTopic(query string, maxResults int) ([]dto.VideoMiniDTO, erro
 		return []dto.VideoMiniDTO{}, err
 	}
 
-	// Debug the actual response
-	logger.Log.Debugf("youTube api response status: %d", res.StatusCode)
+	logger.Log.Infof("youTube api response statusCode, %d, %s", res.StatusCode, query)
 
 	// Only try to parse if we got a 200 OK
 	if res.StatusCode != http.StatusOK {
