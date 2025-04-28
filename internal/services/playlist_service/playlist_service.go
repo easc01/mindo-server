@@ -24,11 +24,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func serializeTopics(topics *[]models.Topic) *[]string {
-	var serializedTopics []string
+func serializeTopics(topics *[]models.Topic) *[]dto.TopicsMiniDTO {
+	var serializedTopics []dto.TopicsMiniDTO
 
 	for _, topic := range *topics {
-		serializedTopics = append(serializedTopics, topic.Name.String)
+		serializedTopics = append(serializedTopics, dto.TopicsMiniDTO{
+			Id:   topic.ID.String(),
+			Name: topic.Name.String,
+		})
 	}
 
 	return &serializedTopics

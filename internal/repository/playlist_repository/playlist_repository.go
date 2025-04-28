@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/easc01/mindo-server/pkg/db"
+	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +20,7 @@ type GetPlaylistWithTopicsRow struct {
 	CreatedAt    sql.NullTime
 	UpdatedAt    sql.NullTime
 	UpdatedBy    uuid.NullUUID
-	Topics       []string
+	Topics       []dto.TopicsMiniDTO
 }
 
 func GetPlaylistWithTopicsQuery(
@@ -38,8 +39,13 @@ func GetPlaylistWithTopicsQuery(
 				p.updated_at, 
 				p.updated_by,
 				COALESCE(
-						json_agg(t.name ORDER BY t.number ASC), 
-						'[]'
+					JSON_AGG(
+						JSON_BUILD_OBJECT(
+							'id', t.id,
+							'name', t.name
+						)
+					) FILTER (WHERE t.id IS NOT NULL),
+					'[]'::json
 				) AS topics
 		FROM playlist p
 		LEFT JOIN topic t ON p.id = t.playlist_id

@@ -11,17 +11,22 @@ type CreatePlaylistRequest struct {
 }
 
 type PlaylistDetailsDTO struct {
-	ID           string    `json:"id"`
-	Name         string    `json:"name"`
-	Description  string    `json:"description"`
-	InterestID   string    `json:"interestId"`
-	ThumbnailURL string    `json:"thumbnailUrl"`
-	Views        int       `json:"views"`
-	Code         string    `json:"code"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
-	UpdatedBy    string    `json:"updatedBy"`
-	Topics       []string  `json:"topics"`
+	ID           string          `json:"id"`
+	Name         string          `json:"name"`
+	Description  string          `json:"description"`
+	InterestID   string          `json:"interestId"`
+	ThumbnailURL string          `json:"thumbnailUrl"`
+	Views        int             `json:"views"`
+	Code         string          `json:"code"`
+	CreatedAt    time.Time       `json:"createdAt"`
+	UpdatedAt    time.Time       `json:"updatedAt"`
+	UpdatedBy    string          `json:"updatedBy"`
+	Topics       []TopicsMiniDTO `json:"topics"`
+}
+
+type TopicsMiniDTO struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type PlaylistPreviewDTO struct {
