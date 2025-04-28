@@ -37,3 +37,25 @@ type PlaylistPreviewDTO struct {
 	UpdatedBy    string    `json:"updatedBy"`
 	TopicsCount  int       `json:"topicsCount"`
 }
+
+type VideoDataDTO struct {
+	ID           string    `json:"id"`
+	TopicID      string    `json:"topicId"`
+	VideoID      string    `json:"videoId"`
+	Title        string    `json:"title"`
+	VideoDate    time.Time `json:"videoPublishedAt"`
+	ChannelTitle string    `json:"channelTitle"`
+	ThumbnailURL string    `json:"thumbnailUrl"`
+	ExpiryAt     time.Time `json:"expiryAt"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	UpdatedBy    string    `json:"updatedBy"`
+}
+
+type VideoMiniDTO struct {
+	VideoID      string    `json:"videoId"`
+	Title        string    `json:"title"`
+	VideoDate    time.Time `json:"videoPublishedAt"`
+	ThumbnailURL string    `json:"thumbnailUrl"`
+	ChannelTitle string    `json:"channelTitle"`
+}

@@ -39,5 +39,6 @@ func registerRoutes(rg *gin.RouterGroup) {
 		userhandler.RegisterAdminUserRoutes(apiRg)
 		interesthandler.RegisterInterest(apiRg)
 		playlisthandler.RegisterPlaylists(apiRg)
+		playlisthandler.RegisterTopic(apiRg)
 	}
 }

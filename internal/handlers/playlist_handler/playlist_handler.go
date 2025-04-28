@@ -23,33 +23,27 @@ func RegisterPlaylists(rg *gin.RouterGroup) {
 		playlistRg.POST(
 			constant.Blank,
 			middleware.RequireRole(models.UserTypeAdminUser),
-			CreatePlaylistHandler,
+			createPlaylistHandler,
 		)
 
 		playlistRg.GET(
 			constant.Blank,
 			middleware.RequireRole(
-				models.UserTypeAppUser,
 				models.UserTypeAdminUser,
+				models.UserTypeAppUser,
 			), // TODO, app user to be used later to map Playlist by user interests
-			GetAllPlaylistPreviews,
+			getAllPlaylistPreviews,
 		)
 
 		playlistRg.GET(
 			constant.IdParam,
 			middleware.RequireRole(models.UserTypeAppUser, models.UserTypeAdminUser),
-			GetPlaylistByIdHandler,
+			getPlaylistByIdHandler,
 		)
-
-		// playlistRg.GET(
-		// 	constant.IdParam+"/videos",
-		// 	middleware.RequireRole(models.UserTypeAppUser),
-		// 	GetPlaylistTopicVideosHandler,
-		// )
 	}
 }
 
-func CreatePlaylistHandler(c *gin.Context) {
+func createPlaylistHandler(c *gin.Context) {
 	req, ok := httputil.GetRequestBody[dto.CreatePlaylistRequest](c)
 	if !ok {
 		return
@@ -109,7 +103,7 @@ func CreatePlaylistHandler(c *gin.Context) {
 	).Send(c)
 }
 
-func GetAllPlaylistPreviews(c *gin.Context) {
+func getAllPlaylistPreviews(c *gin.Context) {
 	playlists, statusCode, err := playlistservice.GetAllPlaylistPreviews(c)
 	if err != nil {
 		logger.Log.Debug("failed to get playlist previews")
@@ -127,7 +121,7 @@ func GetAllPlaylistPreviews(c *gin.Context) {
 	).Send(c)
 }
 
-func GetPlaylistByIdHandler(c *gin.Context) {
+func getPlaylistByIdHandler(c *gin.Context) {
 	playlistId := c.Param("id")
 
 	parsedPlaylistId, err := uuid.Parse(playlistId)
@@ -154,8 +148,4 @@ func GetPlaylistByIdHandler(c *gin.Context) {
 		statusCode,
 		playlistData,
 	).Send(c)
-}
-
-func GetPlaylistTopicVideosHandler(c *gin.Context) {
-
 }

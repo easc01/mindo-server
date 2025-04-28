@@ -13,4 +13,5 @@ const (
 	SignInAgain          = "you have been logged out, sign-in again"
 	NullAppUserContext   = "app user context is missing"
 	NullAdminUserContext = "admin user context is missing"
+	NullUserContext      = " user context is missing"
 )

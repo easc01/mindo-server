@@ -9,6 +9,7 @@ const (
 	Refresh   = "/refresh"
 	Google    = "/google"
 	Playlists = "/playlists"
+	Topics    = "/topics"
 	SignIn    = "/sign-in"
 	SignUp    = "/sign-up"
 )

@@ -240,7 +240,6 @@ type UserToken struct {
 }
 
 type WatchedVideo struct {
-	ID             uuid.UUID
 	UserID         uuid.UUID
 	YoutubeVideoID uuid.UUID
 	UpdatedAt      sql.NullTime
@@ -251,9 +250,10 @@ type WatchedVideo struct {
 type YoutubeVideo struct {
 	ID           uuid.UUID
 	TopicID      uuid.UUID
+	VideoID      string
 	Title        sql.NullString
 	VideoDate    sql.NullTime
-	VideoViews   sql.NullString
+	ChannelTitle sql.NullString
 	ThumbnailUrl sql.NullString
 	ExpiryAt     sql.NullTime
 	UpdatedAt    sql.NullTime

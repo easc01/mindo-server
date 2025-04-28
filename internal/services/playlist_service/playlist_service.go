@@ -11,10 +11,14 @@ import (
 	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
 	playlistrepository "github.com/easc01/mindo-server/internal/repository/playlist_repository"
+	topicrepository "github.com/easc01/mindo-server/internal/repository/topic_repository"
+	youtubevideorepository "github.com/easc01/mindo-server/internal/repository/youtube_video_repository"
 	interestservice "github.com/easc01/mindo-server/internal/services/interest_service"
+	youtubeservice "github.com/easc01/mindo-server/internal/services/youtube_service"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
+	"github.com/easc01/mindo-server/pkg/utils/message"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -286,4 +290,61 @@ func GetAllPlaylistPreviews(c *gin.Context) ([]dto.PlaylistPreviewDTO, int, erro
 	}
 
 	return serializedPlaylist, http.StatusAccepted, nil
+}
+
+func GetVideosByTopicId(c *gin.Context, topicId uuid.UUID) ([]dto.VideoDataDTO, int, error) {
+	topic, err := topicrepository.GetTopicByIDWithVideos(c, topicId)
+	videos := topic.Videos
+
+	if err != nil {
+		logger.Log.Errorf("failed to get yt videos by topic id %s, %s", topicId, err.Error())
+		return []dto.VideoDataDTO{}, http.StatusInternalServerError, err
+	}
+
+	if len(videos) == 0 {
+		newVideos, err := FetchAndSaveNewVideos(c, topic)
+		if err != nil {
+			return []dto.VideoDataDTO{}, http.StatusInternalServerError, err
+		}
+		return newVideos, http.StatusCreated, nil
+	}
+
+	return videos, http.StatusAccepted, nil
+}
+
+func FetchAndSaveNewVideos(
+	c *gin.Context,
+	topic topicrepository.GetTopicByIDWithVideosRow,
+) ([]dto.VideoDataDTO, error) {
+
+	topicId := topic.ID
+	topicName := topic.Name.String
+	user, ok := middleware.GetUser(c)
+
+	if !ok {
+		return []dto.VideoDataDTO{}, fmt.Errorf(message.NullUserContext)
+	}
+
+	var userID uuid.UUID
+	if user.AppUser != nil {
+		userID = user.AppUser.UserID
+	} else {
+		userID = user.AdminUser.UserID
+	}
+
+	videos, err := youtubeservice.SearchVideosByTopic(topicName, 5)
+
+	if err != nil {
+		logger.Log.Errorf("failed to search %s on youtube, %s", topicName, err.Error())
+		return []dto.VideoDataDTO{}, err
+	}
+
+	savedVideos, err := youtubevideorepository.BatchInsertYoutubeVideos(videos, topicId, userID)
+
+	if err != nil {
+		logger.Log.Errorf("failed to batch insert youtube videos of %s, %s", topicName, err.Error())
+		return []dto.VideoDataDTO{}, err
+	}
+
+	return savedVideos, nil
 }

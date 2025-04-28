@@ -67,9 +67,10 @@ CREATE TABLE "saved_study_material" (
 CREATE TABLE "youtube_video" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "topic_id" uuid NOT NULL,
+    "video_id" TEXT NOT NULL,
     "title" VARCHAR(255),
     "video_date" timestamp,
-    "video_views" VARCHAR(255),
+    "channel_title" VARCHAR(255),
     "thumbnail_url" TEXT,
     "expiry_at" timestamp,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -79,12 +80,12 @@ CREATE TABLE "youtube_video" (
 
 -- Watched Video Table
 CREATE TABLE "watched_video" (
-    "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
     "user_id" uuid NOT NULL,
     "youtube_video_id" uuid NOT NULL,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-    "updated_by" uuid
+    "updated_by" uuid,
+    PRIMARY KEY ("user_id", "youtube_video_id")
 );
 
 -- Quiz Table
