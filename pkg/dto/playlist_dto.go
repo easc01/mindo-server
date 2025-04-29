@@ -25,8 +25,9 @@ type PlaylistDetailsDTO struct {
 }
 
 type TopicsMiniDTO struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	VideoID string `json:"videoId"`
 }
 
 type PlaylistPreviewDTO struct {

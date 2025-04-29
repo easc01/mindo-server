@@ -28,6 +28,13 @@ func GetPlaylistWithTopicsQuery(
 	id uuid.UUID,
 ) (GetPlaylistWithTopicsRow, error) {
 	const query = `
+		WITH ranked_videos AS (
+			SELECT 
+				yv.topic_id,
+				yv.video_id,
+				ROW_NUMBER() OVER (PARTITION BY yv.topic_id ORDER BY yv.created_at DESC) AS rn
+			FROM youtube_video yv
+		)
 		SELECT 
 				p.id, 
 				p.name, 
@@ -42,20 +49,21 @@ func GetPlaylistWithTopicsQuery(
 					JSON_AGG(
 						JSON_BUILD_OBJECT(
 							'id', t.id,
-							'name', t.name
+							'name', t.name,
+							'videoId', rv.video_id
 						)
 					) FILTER (WHERE t.id IS NOT NULL),
 					'[]'::json
 				) AS topics
 		FROM playlist p
 		LEFT JOIN topic t ON p.id = t.playlist_id
+		LEFT JOIN ranked_videos rv ON rv.topic_id = t.id AND rv.rn = 1
 		WHERE p.id = $1
 		GROUP BY p.id
 	`
-
 	row := db.DB.QueryRowContext(ctx, query, id)
 	var i GetPlaylistWithTopicsRow
-	var topicsJSON string
+	var topicsJSON []byte
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -71,11 +79,9 @@ func GetPlaylistWithTopicsQuery(
 	if err != nil {
 		return i, err
 	}
-
 	// Unmarshal the JSON array into Topics
-	if err := json.Unmarshal([]byte(topicsJSON), &i.Topics); err != nil {
+	if err := json.Unmarshal(topicsJSON, &i.Topics); err != nil {
 		return i, err
 	}
-
 	return i, nil
 }
