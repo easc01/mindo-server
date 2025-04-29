@@ -271,7 +271,7 @@ func GetPlaylistWithTopics(
 func GetAllPlaylistPreviews(c *gin.Context) ([]dto.PlaylistPreviewDTO, int, error) {
 	playlists, err := db.Queries.GetAllPlaylistsPreviews(c)
 	if err != nil {
-		logger.Log.Debug("failed to get playlist previews")
+		logger.Log.Error("failed to get playlist previews")
 		return []dto.PlaylistPreviewDTO{}, http.StatusInternalServerError, err
 	}
 
@@ -295,24 +295,29 @@ func GetAllPlaylistPreviews(c *gin.Context) ([]dto.PlaylistPreviewDTO, int, erro
 	return serializedPlaylist, http.StatusAccepted, nil
 }
 
-func GetVideosByTopicId(c *gin.Context, topicId uuid.UUID) ([]dto.VideoDataDTO, int, error) {
+func GetVideosByTopicId(
+	c *gin.Context,
+	topicId uuid.UUID,
+	videoId string,
+) (dto.GroupedVideoDataResponse, int, error) {
 	topic, err := topicrepository.GetTopicByIDWithVideos(c, topicId)
 	videos := topic.Videos
 
 	if err != nil {
 		logger.Log.Errorf("failed to get yt videos by topic id %s, %s", topicId, err.Error())
-		return []dto.VideoDataDTO{}, http.StatusInternalServerError, err
+		return dto.GroupedVideoDataResponse{}, http.StatusInternalServerError, err
 	}
 
+	// no videos found in db, search and save new ones
 	if len(videos) == 0 {
 		newVideos, err := FetchAndSaveNewVideos(c, topic, topic.PlaylistName.String)
 		if err != nil {
-			return []dto.VideoDataDTO{}, http.StatusInternalServerError, err
+			return dto.GroupedVideoDataResponse{}, http.StatusInternalServerError, err
 		}
-		return newVideos, http.StatusCreated, nil
+		return GroupVideos(newVideos, videoId), http.StatusCreated, nil
 	}
 
-	return videos, http.StatusAccepted, nil
+	return GroupVideos(videos, videoId), http.StatusAccepted, nil
 }
 
 func FetchAndSaveNewVideos(
@@ -354,4 +359,35 @@ func FetchAndSaveNewVideos(
 	}
 
 	return savedVideos, nil
+}
+
+func GroupVideos(videos []dto.VideoDataDTO, videoID string) dto.GroupedVideoDataResponse {
+	var result dto.GroupedVideoDataResponse
+
+	if len(videos) == 0 {
+		return result
+	}
+
+	var firstVideo *dto.VideoDataDTO
+
+	for _, video := range videos {
+		if video.VideoID == videoID {
+			firstVideo = &video
+			break
+		}
+	}
+
+	if firstVideo == nil {
+		firstVideo = &videos[0]
+	}
+
+	result.Video = *firstVideo
+
+	for _, video := range videos {
+		if video.VideoID != firstVideo.VideoID {
+			result.MoreVideos = append(result.MoreVideos, video)
+		}
+	}
+
+	return result
 }

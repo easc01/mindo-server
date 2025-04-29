@@ -106,7 +106,7 @@ func createPlaylistHandler(c *gin.Context) {
 func getAllPlaylistPreviews(c *gin.Context) {
 	playlists, statusCode, err := playlistservice.GetAllPlaylistPreviews(c)
 	if err != nil {
-		logger.Log.Debug("failed to get playlist previews")
+		logger.Log.Error("failed to get playlist previews")
 		httputil.NewErrorResponse(
 			statusCode,
 			err.Error(),

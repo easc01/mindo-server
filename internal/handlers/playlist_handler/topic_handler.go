@@ -27,6 +27,7 @@ func RegisterTopic(rg *gin.RouterGroup) {
 
 func getTopicVideosHandler(c *gin.Context) {
 	topicId := c.Param("id")
+	videoId := c.Query("videoId")
 
 	parsedTopicId, err := uuid.Parse(topicId)
 	if err != nil {
@@ -38,7 +39,7 @@ func getTopicVideosHandler(c *gin.Context) {
 		return
 	}
 
-	videos, statusCode, err := playlistservice.GetVideosByTopicId(c, parsedTopicId)
+	videos, statusCode, err := playlistservice.GetVideosByTopicId(c, parsedTopicId, videoId)
 	if err != nil {
 		httputil.NewErrorResponse(
 			statusCode,

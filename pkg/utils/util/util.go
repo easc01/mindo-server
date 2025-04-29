@@ -50,3 +50,24 @@ func GenerateHexCode(num int) string {
 	hexCode := fmt.Sprintf("%06X", num)
 	return hexCode
 }
+
+func GetUUIDFromString(s string) uuid.NullUUID {
+	if s != constant.Blank {
+		parsedUUID, err := uuid.Parse(s)
+
+		if err != nil {
+			return uuid.NullUUID{
+				Valid: false,
+			}
+		}
+
+		return uuid.NullUUID{
+			UUID:  parsedUUID,
+			Valid: true,
+		}
+	}
+
+	return uuid.NullUUID{
+		Valid: false,
+	}
+}

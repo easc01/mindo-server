@@ -65,3 +65,8 @@ type VideoMiniDTO struct {
 	ThumbnailURL string    `json:"thumbnailUrl"`
 	ChannelTitle string    `json:"channelTitle"`
 }
+
+type GroupedVideoDataResponse struct {
+	Video      VideoDataDTO   `json:"video"`
+	MoreVideos []VideoDataDTO `json:"moreVideos"`
+}
