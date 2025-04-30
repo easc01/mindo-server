@@ -2,10 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- SEQUENCES
-CREATE SEQUENCE playlist_count_seq 
-  START 0 
-  MINVALUE 0;
-
+CREATE SEQUENCE playlist_count_seq START 0 MINVALUE 0;
 
 -- Playlist Table
 CREATE TABLE "playlist" (
@@ -53,14 +50,17 @@ CREATE TABLE "study_material" (
     "updated_by" uuid
 );
 
--- Saved Study Material Table
-CREATE TABLE "saved_study_material" (
-    "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+-- User saved study Material Table
+CREATE TABLE "user_study_material" (
     "study_material_id" uuid NOT NULL,
     "user_id" uuid NOT NULL,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-    "updated_by" uuid
+    "updated_by" uuid,
+    PRIMARY KEY (
+        "study_material_id",
+        "user_id"
+    )
 );
 
 -- YouTube Video Table
@@ -79,7 +79,7 @@ CREATE TABLE "youtube_video" (
 );
 
 -- Watched Video Table
-CREATE TABLE "watched_video" (
+CREATE TABLE "user_watched_video" (
     "user_id" uuid NOT NULL,
     "youtube_video_id" uuid NOT NULL,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -157,13 +157,13 @@ CREATE TABLE "message" (
 );
 
 -- Joined Community Table
-CREATE TABLE "joined_community" (
-    "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
+CREATE TABLE "user_joined_community" (
     "user_id" uuid NOT NULL,
     "community_id" uuid NOT NULL,
     "updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-    "updated_by" uuid
+    "updated_by" uuid,
+    PRIMARY KEY ("user_id", "community_id")
 );
 
 -- User Table (with Enum)
@@ -256,19 +256,19 @@ ADD FOREIGN KEY ("playlist_id") REFERENCES "playlist" ("id");
 ALTER TABLE "study_material"
 ADD FOREIGN KEY ("topic_id") REFERENCES "topic" ("id");
 
-ALTER TABLE "saved_study_material"
+ALTER TABLE "user_study_material"
 ADD FOREIGN KEY ("study_material_id") REFERENCES "study_material" ("id");
 
-ALTER TABLE "saved_study_material"
+ALTER TABLE "user_study_material"
 ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
 ALTER TABLE "youtube_video"
 ADD FOREIGN KEY ("topic_id") REFERENCES "topic" ("id");
 
-ALTER TABLE "watched_video"
+ALTER TABLE "user_watched_video"
 ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
-ALTER TABLE "watched_video"
+ALTER TABLE "user_watched_video"
 ADD FOREIGN KEY ("youtube_video_id") REFERENCES "youtube_video" ("id");
 
 ALTER TABLE "quiz_question"
@@ -292,10 +292,10 @@ ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 ALTER TABLE "message"
 ADD FOREIGN KEY ("community_id") REFERENCES "community" ("id");
 
-ALTER TABLE "joined_community"
+ALTER TABLE "user_joined_community"
 ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
-ALTER TABLE "joined_community"
+ALTER TABLE "user_joined_community"
 ADD FOREIGN KEY ("community_id") REFERENCES "community" ("id");
 
 ALTER TABLE "app_user_interest"

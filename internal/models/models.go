@@ -110,15 +110,6 @@ type Interest struct {
 	UpdatedBy uuid.NullUUID
 }
 
-type JoinedCommunity struct {
-	ID          uuid.UUID
-	UserID      uuid.UUID
-	CommunityID uuid.UUID
-	UpdatedAt   sql.NullTime
-	CreatedAt   sql.NullTime
-	UpdatedBy   uuid.NullUUID
-}
-
 type Message struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
@@ -183,15 +174,6 @@ type QuizResultQuestion struct {
 	UpdatedBy       uuid.NullUUID
 }
 
-type SavedStudyMaterial struct {
-	ID              uuid.UUID
-	StudyMaterialID uuid.UUID
-	UserID          uuid.UUID
-	UpdatedAt       sql.NullTime
-	CreatedAt       sql.NullTime
-	UpdatedBy       uuid.NullUUID
-}
-
 type StudyMaterial struct {
 	ID        uuid.UUID
 	TopicID   uuid.UUID
@@ -220,12 +202,28 @@ type User struct {
 	UpdatedBy uuid.NullUUID
 }
 
+type UserJoinedCommunity struct {
+	UserID      uuid.UUID
+	CommunityID uuid.UUID
+	UpdatedAt   sql.NullTime
+	CreatedAt   sql.NullTime
+	UpdatedBy   uuid.NullUUID
+}
+
 type UserPlaylist struct {
 	UserID     uuid.UUID
 	PlaylistID uuid.UUID
 	UpdatedAt  sql.NullTime
 	CreatedAt  sql.NullTime
 	UpdatedBy  uuid.NullUUID
+}
+
+type UserStudyMaterial struct {
+	StudyMaterialID uuid.UUID
+	UserID          uuid.UUID
+	UpdatedAt       sql.NullTime
+	CreatedAt       sql.NullTime
+	UpdatedBy       uuid.NullUUID
 }
 
 type UserToken struct {
@@ -239,7 +237,7 @@ type UserToken struct {
 	UpdatedBy    uuid.NullUUID
 }
 
-type WatchedVideo struct {
+type UserWatchedVideo struct {
 	UserID         uuid.UUID
 	YoutubeVideoID uuid.UUID
 	UpdatedAt      sql.NullTime
