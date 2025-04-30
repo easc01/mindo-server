@@ -50,7 +50,8 @@ func GetPlaylistWithTopicsQuery(
 						JSON_BUILD_OBJECT(
 							'id', t.id,
 							'name', t.name,
-							'videoId', rv.video_id
+							'videoId', rv.video_id,
+							'topicNumber', t.number
 						)
 					) FILTER (WHERE t.id IS NOT NULL),
 					'[]'::json
