@@ -268,11 +268,19 @@ func GetPlaylistWithTopics(
 	}, http.StatusAccepted, nil
 }
 
-func GetAllPlaylistPreviews(c *gin.Context) ([]dto.PlaylistPreviewDTO, int, error) {
-	playlists, err := db.Queries.GetAllPlaylistsPreviews(c)
+func GetAllPlaylistPreviews(
+	c *gin.Context,
+	searchTag string,
+) ([]dto.PlaylistPreviewDTO, int, error) {
+	playlists, err := db.Queries.GetAllPlaylistsPreviews(c, searchTag)
+
 	if err != nil {
 		logger.Log.Error("failed to get playlist previews")
 		return []dto.PlaylistPreviewDTO{}, http.StatusInternalServerError, err
+	}
+
+	if playlists == nil {
+		return []dto.PlaylistPreviewDTO{}, http.StatusAccepted, nil
 	}
 
 	var serializedPlaylist []dto.PlaylistPreviewDTO

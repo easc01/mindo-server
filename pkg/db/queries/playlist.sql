@@ -51,4 +51,6 @@ SELECT
     COALESCE(COUNT(t.id), 0) AS topics_count
 FROM playlist p
 LEFT JOIN topic t ON t.playlist_id = p.id
-GROUP BY p.id;
+WHERE $1 = '' OR similarity(p.name, $1) > 0.1
+GROUP BY p.id
+ORDER BY similarity(p.name, $1) DESC;

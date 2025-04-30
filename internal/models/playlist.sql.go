@@ -82,7 +82,9 @@ SELECT
     COALESCE(COUNT(t.id), 0) AS topics_count
 FROM playlist p
 LEFT JOIN topic t ON t.playlist_id = p.id
+WHERE $1 = '' OR similarity(p.name, $1) > 0.1
 GROUP BY p.id
+ORDER BY similarity(p.name, $1) DESC
 `
 
 type GetAllPlaylistsPreviewsRow struct {
@@ -99,8 +101,8 @@ type GetAllPlaylistsPreviewsRow struct {
 	TopicsCount  interface{}
 }
 
-func (q *Queries) GetAllPlaylistsPreviews(ctx context.Context) ([]GetAllPlaylistsPreviewsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getAllPlaylistsPreviews)
+func (q *Queries) GetAllPlaylistsPreviews(ctx context.Context, dollar_1 interface{}) ([]GetAllPlaylistsPreviewsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPlaylistsPreviews, dollar_1)
 	if err != nil {
 		return nil, err
 	}
