@@ -9,6 +9,7 @@ import (
 
 	"github.com/easc01/mindo-server/internal/config"
 	"github.com/easc01/mindo-server/internal/models"
+	userrepository "github.com/easc01/mindo-server/internal/repository/user_repository"
 	authservice "github.com/easc01/mindo-server/internal/services/auth_service"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
@@ -192,7 +193,7 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 }
 
 func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
-	appUser, appUserErr := db.Queries.GetAppUserByUserID(context.Background(), id)
+	appUser, appUserErr := userrepository.GetAppUserByUserID(context.Background(), id)
 
 	if appUserErr != nil {
 		if appUserErr == sql.ErrNoRows {
@@ -220,5 +221,6 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          appUser.UserType,
+		JoinedCommunities: appUser.JoinedCommunities,
 	}, http.StatusAccepted, nil
 }

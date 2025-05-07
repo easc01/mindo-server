@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/easc01/mindo-server/internal/models"
+	userrepository "github.com/easc01/mindo-server/internal/repository/user_repository"
 	authservice "github.com/easc01/mindo-server/internal/services/auth_service"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
@@ -51,7 +52,7 @@ func AuthenticateAndFetchUser(
 
 	switch claims.Role {
 	case models.UserTypeAppUser:
-		appUser, err := db.Queries.GetAppUserByUserID(r.Context(), userID)
+		appUser, err := userrepository.GetAppUserByUserID(r.Context(), userID)
 		if err != nil {
 			return UserContextUnion{}, err
 		}
@@ -70,6 +71,7 @@ func AuthenticateAndFetchUser(
 				CreatedAt:         appUser.CreatedAt.Time,
 				UpdatedBy:         appUser.UpdatedBy.UUID,
 				UserType:          appUser.UserType,
+				JoinedCommunities: appUser.JoinedCommunities,
 			},
 			AdminUser: nil,
 		}, nil
