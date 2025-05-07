@@ -55,8 +55,8 @@ func GetAppUserByUserID(
 										'about', c.about,
 										'thumbnailUrl', c.thumbnail_url,
 										'logoUrl', c.logo_url,
-										'updatedAt', c.updated_at,
-										'createdAt', c.created_at,
+										'updatedAt', TO_CHAR(c.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+										'createdAt', TO_CHAR(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
 										'updatedBy', c.updated_by
 								)
 						) FILTER (WHERE c.id IS NOT NULL),

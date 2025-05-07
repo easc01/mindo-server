@@ -52,3 +52,23 @@ func (q *Queries) CreateNewCommunity(ctx context.Context, arg CreateNewCommunity
 	)
 	return i, err
 }
+
+const createNewUserJoinedCommunityById = `-- name: CreateNewUserJoinedCommunityById :exec
+INSERT INTO user_joined_community (user_id, community_id, updated_by)
+VALUES (
+  $1,
+  $2,
+  $3
+)
+`
+
+type CreateNewUserJoinedCommunityByIdParams struct {
+	UserID      uuid.UUID
+	CommunityID uuid.UUID
+	UpdatedBy   uuid.NullUUID
+}
+
+func (q *Queries) CreateNewUserJoinedCommunityById(ctx context.Context, arg CreateNewUserJoinedCommunityByIdParams) error {
+	_, err := q.db.ExecContext(ctx, createNewUserJoinedCommunityById, arg.UserID, arg.CommunityID, arg.UpdatedBy)
+	return err
+}

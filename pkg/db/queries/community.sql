@@ -7,3 +7,12 @@ VALUES (
   $4,
   $5
 ) RETURNING *;
+
+
+-- name: CreateNewUserJoinedCommunityById :exec
+INSERT INTO user_joined_community (user_id, community_id, updated_by)
+VALUES (
+  $1,
+  $2,
+  $3
+);

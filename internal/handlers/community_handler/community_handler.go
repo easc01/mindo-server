@@ -1,6 +1,8 @@
 package communityhandler
 
 import (
+	"net/http"
+
 	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
 	communityservice "github.com/easc01/mindo-server/internal/services/community_service"
@@ -10,6 +12,7 @@ import (
 	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func RegisterCommunity(rg *gin.RouterGroup) {
@@ -18,12 +21,12 @@ func RegisterCommunity(rg *gin.RouterGroup) {
 	{
 		communityRg.POST(
 			constant.Blank,
-			middleware.RequireRole(models.UserTypeAppUser, models.UserTypeAdminUser),
+			middleware.RequireRole(models.UserTypeAppUser),
 			createCommunity,
 		)
 		communityRg.POST(
 			"/join/:communityId",
-			middleware.RequireRole(models.UserTypeAppUser, models.UserTypeAdminUser),
+			middleware.RequireRole(models.UserTypeAppUser),
 			joinCommunity,
 		)
 	}
@@ -53,5 +56,31 @@ func createCommunity(c *gin.Context) {
 }
 
 func joinCommunity(c *gin.Context) {
+	communityId := c.Param("communityId")
 
+	parsedCommId, err := uuid.Parse(communityId)
+	if err != nil {
+		networkutil.NewErrorResponse(
+			http.StatusBadRequest,
+			"invalid community id",
+			err.Error(),
+		).Send(c)
+		return
+	}
+
+	statusCode, err := communityservice.JoinExistingCommunity(c, parsedCommId)
+
+	if err != nil {
+		networkutil.NewErrorResponse(
+			statusCode,
+			message.SomethingWentWrong,
+			err.Error(),
+		).Send(c)
+		return
+	}
+
+	networkutil.NewResponse(
+		statusCode,
+		"community joined",
+	).Send(c)
 }
