@@ -16,3 +16,13 @@ VALUES (
   $2,
   $3
 );
+
+
+-- name: CreateMessage :one
+INSERT INTO "message" (user_id, community_id, content, updated_by)
+VALUES (
+  $1,
+  $2,
+  $3,
+  $4
+) RETURNING *;

@@ -1,15 +1,18 @@
 package communityhandler
 
 import (
+	"context"
 	"net/http"
 	"sync"
 
 	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
+	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
 	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
+	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -19,17 +22,17 @@ var upgrader = websocket.Upgrader{
 }
 
 type RoomManager struct {
-	rooms map[string]map[*dto.ChatClient]bool
+	rooms map[uuid.UUID]map[*dto.ChatClient]bool
 	mu    sync.Mutex
 }
 
 // Map<RoomID, ChatClientDTO>
 var roomManager = RoomManager{
-	rooms: make(map[string]map[*dto.ChatClient]bool),
+	rooms: make(map[uuid.UUID]map[*dto.ChatClient]bool),
 }
 
 // AddClient registers a new client in a specific room
-func (m *RoomManager) AddClient(client *dto.ChatClient, roomID string) {
+func (m *RoomManager) AddClient(client *dto.ChatClient, roomID uuid.UUID) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -43,7 +46,7 @@ func (m *RoomManager) AddClient(client *dto.ChatClient, roomID string) {
 }
 
 // RemoveClient removes a client from a specific room
-func (m *RoomManager) RemoveClient(client *dto.ChatClient, roomID string) {
+func (m *RoomManager) RemoveClient(client *dto.ChatClient, roomID uuid.UUID) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -116,8 +119,8 @@ func HandleRoomChatWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add client to the room
-	roomManager.AddClient(&client, roomID)
-	defer roomManager.RemoveClient(&client, roomID)
+	roomManager.AddClient(&client, parsedRoomID)
+	defer roomManager.RemoveClient(&client, parsedRoomID)
 
 	// Handle incoming messages
 	for {
@@ -126,19 +129,31 @@ func HandleRoomChatWS(w http.ResponseWriter, r *http.Request) {
 			logger.Log.Errorf("read error, %s", err)
 			break
 		}
-		logger.Log.Infof("received in room %s: %s", roomID, msg)
+		logger.Log.Infof("received in room %s: %s", parsedRoomID, msg)
 		// Broadcast message to the room
-		roomManager.Broadcast(roomID, msg)
+		roomManager.Broadcast(parsedRoomID, user.AppUser.UserID, msg)
 	}
 }
 
 // Broadcast sends a message to all clients in a specific room
-func (m *RoomManager) Broadcast(roomID string, msg []byte) {
+func (m *RoomManager) Broadcast(roomID uuid.UUID, userID uuid.UUID, msg []byte) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	// Check if the room exists
 	if roomClients, exists := m.rooms[roomID]; exists {
+		_, err := db.Queries.CreateMessage(context.Background(), models.CreateMessageParams{
+			CommunityID: roomID,
+			UserID:      userID,
+			Content:     util.GetSQLNullString(string(msg)),
+			UpdatedBy:   util.GetNullUUID(userID),
+		})
+
+		if err != nil {
+			logger.Log.Errorf("failed to save message, %s", err.Error())
+			return
+		}
+
 		for client := range roomClients {
 			err := client.Conn.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {

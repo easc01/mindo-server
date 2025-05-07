@@ -12,6 +12,43 @@ import (
 	"github.com/google/uuid"
 )
 
+const createMessage = `-- name: CreateMessage :one
+INSERT INTO "message" (user_id, community_id, content, updated_by)
+VALUES (
+  $1,
+  $2,
+  $3,
+  $4
+) RETURNING id, user_id, community_id, content, updated_at, created_at, updated_by
+`
+
+type CreateMessageParams struct {
+	UserID      uuid.UUID
+	CommunityID uuid.UUID
+	Content     sql.NullString
+	UpdatedBy   uuid.NullUUID
+}
+
+func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
+	row := q.db.QueryRowContext(ctx, createMessage,
+		arg.UserID,
+		arg.CommunityID,
+		arg.Content,
+		arg.UpdatedBy,
+	)
+	var i Message
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CommunityID,
+		&i.Content,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+		&i.UpdatedBy,
+	)
+	return i, err
+}
+
 const createNewCommunity = `-- name: CreateNewCommunity :one
 INSERT INTO community (title, about, thumbnail_url, logo_url, updated_by)
 VALUES (
