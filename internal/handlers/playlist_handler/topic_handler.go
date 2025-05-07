@@ -7,7 +7,7 @@ import (
 	"github.com/easc01/mindo-server/internal/models"
 	playlistservice "github.com/easc01/mindo-server/internal/services/playlist_service"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
+	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -31,7 +31,7 @@ func getTopicVideosHandler(c *gin.Context) {
 
 	parsedTopicId, err := uuid.Parse(topicId)
 	if err != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusBadRequest,
 			"invalid topic id",
 			err.Error(),
@@ -41,7 +41,7 @@ func getTopicVideosHandler(c *gin.Context) {
 
 	videos, statusCode, err := playlistservice.GetVideosByTopicId(c, parsedTopicId, videoId)
 	if err != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			err.Error(),
 			nil,
@@ -49,7 +49,7 @@ func getTopicVideosHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		videos,
 	).Send(c)

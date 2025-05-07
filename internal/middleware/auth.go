@@ -11,7 +11,7 @@ import (
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
+	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/gin-gonic/gin"
 )
@@ -104,7 +104,7 @@ func RequireRole(allowedRoles ...models.UserType) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userData, err := AuthenticateAndFetchUser(c.Request, allowedRoles...)
 		if err != nil {
-			httputil.NewErrorResponse(http.StatusUnauthorized, err.Error(), nil).Send(c)
+			networkutil.NewErrorResponse(http.StatusUnauthorized, err.Error(), nil).Send(c)
 			c.Abort()
 			return
 		}

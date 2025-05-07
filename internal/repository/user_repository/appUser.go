@@ -25,7 +25,7 @@ type GetAppUserByUserIDRow struct {
 	CreatedAt         sql.NullTime
 	UpdatedAt         sql.NullTime
 	UpdatedBy         uuid.NullUUID
-	JoinedCommunities []dto.CommunitiesDTO
+	JoinedCommunities []dto.CommunityDTO
 }
 
 func GetAppUserByUserID(

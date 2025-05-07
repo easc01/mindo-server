@@ -18,7 +18,7 @@ type AppUserDataDTO struct {
 	Name              string           `json:"name"`
 	Mobile            string           `json:"mobile"`
 	Email             string           `json:"email"`
-	JoinedCommunities []CommunitiesDTO `json:"joinedCommunities"`
+	JoinedCommunities []CommunityDTO `json:"joinedCommunities"`
 	LastLoginAt       time.Time        `json:"lastLoginAt"`
 	UpdatedAt         time.Time        `json:"updatedAt"`
 	CreatedAt         time.Time        `json:"createdAt"`

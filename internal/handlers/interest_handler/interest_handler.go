@@ -9,8 +9,8 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
+	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +29,7 @@ func RegisterInterest(rg *gin.RouterGroup) {
 }
 
 func upsertMasterInterestHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.UpsertInterestDTO](c)
+	req, ok := networkutil.GetRequestBody[dto.UpsertInterestDTO](c)
 	if !ok {
 		return
 	}
@@ -37,7 +37,7 @@ func upsertMasterInterestHandler(c *gin.Context) {
 	user, ok := middleware.GetUser(c)
 	if user.AdminUser == nil || !ok {
 		logger.Log.Errorf(message.NullAppUserContext)
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusInternalServerError,
 			message.NullAdminUserContext,
 			nil,
@@ -52,7 +52,7 @@ func upsertMasterInterestHandler(c *gin.Context) {
 	)
 
 	if upsertErr != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			upsertErr.Error(),
 			nil,
@@ -60,7 +60,7 @@ func upsertMasterInterestHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		"interest master list updated",
 	).Send(c)
@@ -70,11 +70,11 @@ func getMasterInterestListHandler(c *gin.Context) {
 	interests, statusCode, intErr := interestservice.GetMasterInterestList(c)
 
 	if intErr != nil {
-		httputil.NewErrorResponse(statusCode, message.SomethingWentWrong, interests)
+		networkutil.NewErrorResponse(statusCode, message.SomethingWentWrong, interests)
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		interests,
 	).Send(c)

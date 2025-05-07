@@ -1,4 +1,4 @@
-package httputil
+package networkutil
 
 import (
 	"github.com/easc01/mindo-server/pkg/utils/constant"

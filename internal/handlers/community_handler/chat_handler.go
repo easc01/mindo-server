@@ -9,8 +9,8 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
-	"github.com/gin-gonic/gin"
+	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -59,33 +59,56 @@ func (m *RoomManager) RemoveClient(client *dto.ChatClient, roomID string) {
 	client.Conn.Close()
 }
 
-func HandleRoomChatWS(c *gin.Context) {
-
-	// Http part, do auth and stuff
-	r := c.Request
-	w := c.Writer.(http.ResponseWriter)
+func HandleRoomChatWS(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		logger.Log.Errorf("upgrade error, %s", err)
+		networkutil.WSError(
+			http.StatusInternalServerError,
+			err.Error(),
+		).Send(conn)
+		return
+	}
 
 	roomID := r.URL.Query().Get("communityId")
 	authToken := r.URL.Query().Get("auth")
 
+	parsedRoomID, err := uuid.Parse(roomID)
+	if err != nil {
+		networkutil.WSError(
+			http.StatusBadRequest,
+			"invalid community id",
+		).Send(conn)
+		return
+	}
+
+	// authenticate connection
 	r.Header.Set(constant.Authorization, authToken)
 	user, err := middleware.AuthenticateAndFetchUser(r, models.UserTypeAppUser)
 
 	if err != nil {
-		httputil.NewErrorResponse(http.StatusUnauthorized, err.Error(), nil).Send(c)
-		c.Abort()
+		networkutil.WSError(
+			http.StatusUnauthorized,
+			err.Error(),
+		).Send(conn)
 		return
 	}
 
-	// TODO: check whether user is in community
+	// check whether user is in community
+	var userJoinedCommunity *dto.CommunityDTO
+	for _, community := range user.AppUser.JoinedCommunities {
+		if community.ID == parsedRoomID {
+			userJoinedCommunity = &community
+		}
+	}
 
-	// Once Authenticated, Only then Upgrade to WebSocket
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		logger.Log.Errorf("upgrade error, %s", err)
+	if userJoinedCommunity == nil {
+		networkutil.WSError(
+			http.StatusNotFound,
+			"community not found",
+		).Send(conn)
 		return
 	}
-	logger.Log.Infof("client connected to room, %s", roomID)
 
 	client := dto.ChatClient{
 		AppUser: user.AppUser,

@@ -42,11 +42,12 @@ func registerRoutes(rg *gin.RouterGroup) {
 		interesthandler.RegisterInterest(apiRg)
 		playlisthandler.RegisterPlaylists(apiRg)
 		playlisthandler.RegisterTopic(apiRg)
+		communityhandler.RegisterCommunity(apiRg)
 	}
 }
 
 func registerWebSockets(r *gin.Engine) {
 	r.GET("/chat", func(ctx *gin.Context) {
-		communityhandler.HandleRoomChatWS(ctx)
+		communityhandler.HandleRoomChatWS(ctx.Writer, ctx.Request)
 	})
 }

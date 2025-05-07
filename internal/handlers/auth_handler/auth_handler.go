@@ -8,8 +8,8 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
+	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +30,7 @@ func RegisterAuth(rg *gin.RouterGroup) {
 }
 
 func googleAuthHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.TokenDTO](c)
+	req, ok := networkutil.GetRequestBody[dto.TokenDTO](c)
 	if !ok {
 		return
 	}
@@ -38,7 +38,7 @@ func googleAuthHandler(c *gin.Context) {
 	user, statusCode, userErr := userservice.GoogleAuthService(c, &req)
 
 	if userErr != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			message.SomethingWentWrong,
 			userErr.Error(),
@@ -46,7 +46,7 @@ func googleAuthHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		user,
 	).Send(c)
@@ -56,7 +56,7 @@ func refreshTokenHandler(c *gin.Context) {
 	refreshToken, err := c.Cookie(constant.RefreshToken)
 	if err != nil {
 		logger.Log.Errorf("%s cookie not found", constant.RefreshToken)
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusUnauthorized,
 			message.SignInAgain,
 			nil,
@@ -66,7 +66,7 @@ func refreshTokenHandler(c *gin.Context) {
 	token, statusCode, err := authservice.RefreshTokenService(c, refreshToken)
 	if err != nil {
 		logger.Log.Errorf("failed to generate access and refresh tokens, %s", err.Error())
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			err.Error(),
 			constant.Blank,
@@ -74,14 +74,14 @@ func refreshTokenHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		token,
 	).Send(c)
 }
 
 func adminSignUpHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.NewAdminUserParams](c)
+	req, ok := networkutil.GetRequestBody[dto.NewAdminUserParams](c)
 	if !ok {
 		return
 	}
@@ -89,7 +89,7 @@ func adminSignUpHandler(c *gin.Context) {
 	user, userErr := userservice.CreateNewAdminUser(&req)
 
 	if userErr != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusInternalServerError,
 			message.SomethingWentWrong,
 			userErr.Error(),
@@ -97,14 +97,14 @@ func adminSignUpHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		http.StatusCreated,
 		user,
 	).Send(c)
 }
 
 func adminSignInHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.AdminSignInParams](c)
+	req, ok := networkutil.GetRequestBody[dto.AdminSignInParams](c)
 	if !ok {
 		return
 	}
@@ -112,7 +112,7 @@ func adminSignInHandler(c *gin.Context) {
 	user, statusCode, userErr := userservice.AdminSignIn(c, &req)
 
 	if userErr != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			message.SomethingWentWrong,
 			userErr.Error(),
@@ -120,7 +120,7 @@ func adminSignInHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		user,
 	).Send(c)

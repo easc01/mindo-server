@@ -9,8 +9,8 @@ import (
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
+	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -44,7 +44,7 @@ func RegisterPlaylists(rg *gin.RouterGroup) {
 }
 
 func createPlaylistHandler(c *gin.Context) {
-	req, ok := httputil.GetRequestBody[dto.CreatePlaylistRequest](c)
+	req, ok := networkutil.GetRequestBody[dto.CreatePlaylistRequest](c)
 	if !ok {
 		return
 	}
@@ -60,7 +60,7 @@ func createPlaylistHandler(c *gin.Context) {
 
 	// Ensure valid topics exist
 	if len(validTopics) == 0 {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusBadRequest,
 			"no valid topics provided",
 			nil,
@@ -73,7 +73,7 @@ func createPlaylistHandler(c *gin.Context) {
 	user, ok := middleware.GetUser(c)
 	if user.AdminUser == nil || !ok {
 		logger.Log.Errorf(message.NullAdminUserContext)
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusInternalServerError,
 			message.SomethingWentWrong,
 			message.NullAdminUserContext,
@@ -89,7 +89,7 @@ func createPlaylistHandler(c *gin.Context) {
 
 	if err != nil {
 		logger.Log.Errorf("failed to process playlist creation by admin, %s", user.AdminUser.UserID)
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			err.Error(),
 			nil,
@@ -97,7 +97,7 @@ func createPlaylistHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		http.StatusCreated,
 		playlistDetails,
 	).Send(c)
@@ -109,7 +109,7 @@ func getAllPlaylistPreviews(c *gin.Context) {
 	playlists, statusCode, err := playlistservice.GetAllPlaylistPreviews(c, searchTag)
 	if err != nil {
 		logger.Log.Error("failed to get playlist previews")
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			err.Error(),
 			nil,
@@ -117,7 +117,7 @@ func getAllPlaylistPreviews(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		playlists,
 	).Send(c)
@@ -128,7 +128,7 @@ func getPlaylistByIdHandler(c *gin.Context) {
 
 	parsedPlaylistId, err := uuid.Parse(playlistId)
 	if err != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusBadRequest,
 			message.InvalidUserID,
 			err.Error(),
@@ -138,7 +138,7 @@ func getPlaylistByIdHandler(c *gin.Context) {
 
 	playlistData, statusCode, err := playlistservice.GetPlaylistWithTopics(c, parsedPlaylistId)
 	if err != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			err.Error(),
 			nil,
@@ -146,7 +146,7 @@ func getPlaylistByIdHandler(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		statusCode,
 		playlistData,
 	).Send(c)

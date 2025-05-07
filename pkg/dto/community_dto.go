@@ -17,13 +17,20 @@ type ChatMessage struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-type CommunitiesDTO struct {
-	ID           uuid.UUID     `json:"id"`
-	Title        string        `json:"title"`
-	About        string        `json:"about"`
-	ThumbnailUrl string        `json:"thumbnailUrl"`
-	LogoUrl      string        `json:"logoUrl"`
-	UpdatedAt    time.Time     `json:"updatedAt"`
-	CreatedAt    time.Time     `json:"createdAt"`
-	UpdatedBy    uuid.NullUUID `json:"updatedBy"`
+type CommunityDTO struct {
+	ID           uuid.UUID `json:"id"`
+	Title        string    `json:"title"`
+	About        string    `json:"about"`
+	ThumbnailUrl string    `json:"thumbnailUrl"`
+	LogoUrl      string    `json:"logoUrl"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedBy    string    `json:"updatedBy"`
+}
+
+type CreateCommunityDTO struct {
+	Title        string `json:"title"        binding:"required"`
+	About        string `json:"about"`
+	ThumbnailUrl string `json:"thumbnailUrl"`
+	LogoUrl      string `json:"logoUrl"`
 }

@@ -8,8 +8,8 @@ import (
 	userservice "github.com/easc01/mindo-server/internal/services/user_service"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
-	httputil "github.com/easc01/mindo-server/pkg/utils/http_util"
 	"github.com/easc01/mindo-server/pkg/utils/message"
+	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/route"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -30,14 +30,14 @@ func getAdminUser(c *gin.Context) {
 
 	if user.AdminUser == nil || !ok {
 		logger.Log.Errorf(message.NullAdminUserContext)
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusInternalServerError,
 			message.SomethingWentWrong,
 			message.NullAdminUserContext,
 		).Send(c)
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		http.StatusAccepted,
 		user.AdminUser,
 	).Send(c)
@@ -48,7 +48,7 @@ func getAdminUserByID(c *gin.Context) {
 
 	parsedId, parseErr := uuid.Parse(paramId)
 	if parseErr != nil {
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			http.StatusBadRequest,
 			message.InvalidUserID,
 			parseErr.Error(),
@@ -60,7 +60,7 @@ func getAdminUserByID(c *gin.Context) {
 
 	if userErr != nil {
 		logger.Log.Errorf("failed to get admin %s id: %s", userErr, parsedId)
-		httputil.NewErrorResponse(
+		networkutil.NewErrorResponse(
 			statusCode,
 			message.SomethingWentWrong,
 			userErr.Error(),
@@ -68,7 +68,7 @@ func getAdminUserByID(c *gin.Context) {
 		return
 	}
 
-	httputil.NewResponse(
+	networkutil.NewResponse(
 		http.StatusAccepted,
 		user,
 	).Send(c)
