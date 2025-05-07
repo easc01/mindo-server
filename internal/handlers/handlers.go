@@ -2,6 +2,7 @@ package handlers
 
 import (
 	authhandler "github.com/easc01/mindo-server/internal/handlers/auth_handler"
+	communityhandler "github.com/easc01/mindo-server/internal/handlers/community_handler"
 	interesthandler "github.com/easc01/mindo-server/internal/handlers/interest_handler"
 	playlisthandler "github.com/easc01/mindo-server/internal/handlers/playlist_handler"
 	userhandler "github.com/easc01/mindo-server/internal/handlers/user_handler"
@@ -22,6 +23,7 @@ func InitREST() {
 	}))
 
 	registerRoutes(&r.RouterGroup)
+	registerWebSockets(r)
 
 	routerErr := r.Run(":8080")
 
@@ -41,4 +43,10 @@ func registerRoutes(rg *gin.RouterGroup) {
 		playlisthandler.RegisterPlaylists(apiRg)
 		playlisthandler.RegisterTopic(apiRg)
 	}
+}
+
+func registerWebSockets(r *gin.Engine) {
+	r.GET("/chat", func(ctx *gin.Context) {
+		communityhandler.HandleRoomChatWS(ctx)
+	})
 }
