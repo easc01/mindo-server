@@ -12,50 +12,15 @@ import (
 	"github.com/google/uuid"
 )
 
-const getAllMessages = `-- name: GetAllMessages :many
-SELECT id, user_id, community_id, content, updated_at, created_at, updated_by FROM "message"
-`
-
-func (q *Queries) GetAllMessages(ctx context.Context) ([]Message, error) {
-	rows, err := q.db.QueryContext(ctx, getAllMessages)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Message
-	for rows.Next() {
-		var i Message
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.CommunityID,
-			&i.Content,
-			&i.UpdatedAt,
-			&i.CreatedAt,
-			&i.UpdatedBy,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getMessagePageByCommunityID = `-- name: GetMessagePageByCommunityID :many
-SELECT m.id, m.user_id, m.community_id, m.content, m.updated_at, m.created_at, m.updated_by, au.username, au.profile_picture_url
+SELECT m.id, m.user_id, m.community_id, m.content, m.updated_at, m.created_at, m.updated_by, au.username, au.profile_picture_url, au.name
 FROM "message" m
 JOIN app_user au ON au.user_id = m.user_id
 WHERE
     m.community_id = $1
     AND m.created_at < $2
 ORDER BY m.created_at DESC
-LIMIT 20
+LIMIT 50
 `
 
 type GetMessagePageByCommunityIDParams struct {
@@ -73,6 +38,7 @@ type GetMessagePageByCommunityIDRow struct {
 	UpdatedBy         uuid.NullUUID
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
+	Name              sql.NullString
 }
 
 func (q *Queries) GetMessagePageByCommunityID(ctx context.Context, arg GetMessagePageByCommunityIDParams) ([]GetMessagePageByCommunityIDRow, error) {
@@ -94,6 +60,7 @@ func (q *Queries) GetMessagePageByCommunityID(ctx context.Context, arg GetMessag
 			&i.UpdatedBy,
 			&i.Username,
 			&i.ProfilePictureUrl,
+			&i.Name,
 		); err != nil {
 			return nil, err
 		}

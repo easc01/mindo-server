@@ -80,6 +80,7 @@ func serializeUserMessages(messages []models.GetMessagePageByCommunityIDRow) []d
 			UserID:         message.UserID,
 			Username:       message.Username.String,
 			UserProfileUrl: message.ProfilePictureUrl.String,
+			Name:           message.Name.String,
 			Messages: []dto.MessageDTO{
 				{
 					ID:        message.ID,

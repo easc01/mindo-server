@@ -38,6 +38,7 @@ type CreateCommunityDTO struct {
 type UserMessageDTO struct {
 	MessageGroupID uuid.UUID    `json:"messageGroupId"`
 	UserID         uuid.UUID    `json:"userId"`
+	Name           string       `json:"name"`
 	Username       string       `json:"username"`
 	UserProfileUrl string       `json:"userProfilePic"`
 	Messages       []MessageDTO `json:"messages"`
