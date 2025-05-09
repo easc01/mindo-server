@@ -13,6 +13,7 @@ const (
 	SignIn      = "/sign-in"
 	SignUp      = "/sign-up"
 	Communities = "/communities"
+	Messages    = "/messages"
 )
 
 func GetRefreshRoute() string {

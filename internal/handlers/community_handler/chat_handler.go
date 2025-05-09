@@ -7,12 +7,11 @@ import (
 
 	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
-	"github.com/easc01/mindo-server/pkg/db"
+	communityservice "github.com/easc01/mindo-server/internal/services/community_service"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
 	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
-	"github.com/easc01/mindo-server/pkg/utils/util"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -142,12 +141,12 @@ func (m *RoomManager) Broadcast(roomID uuid.UUID, userID uuid.UUID, msg []byte) 
 
 	// Check if the room exists
 	if roomClients, exists := m.rooms[roomID]; exists {
-		_, err := db.Queries.CreateMessage(context.Background(), models.CreateMessageParams{
-			CommunityID: roomID,
-			UserID:      userID,
-			Content:     util.GetSQLNullString(string(msg)),
-			UpdatedBy:   util.GetNullUUID(userID),
-		})
+		_, err := communityservice.SaveCommunityMessage(
+			context.Background(),
+			roomID,
+			userID,
+			string(msg),
+		)
 
 		if err != nil {
 			logger.Log.Errorf("failed to save message, %s", err.Error())

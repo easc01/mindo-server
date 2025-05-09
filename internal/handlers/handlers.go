@@ -43,6 +43,7 @@ func registerRoutes(rg *gin.RouterGroup) {
 		playlisthandler.RegisterPlaylists(apiRg)
 		playlisthandler.RegisterTopic(apiRg)
 		communityhandler.RegisterCommunity(apiRg)
+		communityhandler.RegisterMessages(apiRg)
 	}
 }
 
