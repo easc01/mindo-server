@@ -7,7 +7,6 @@ import (
 	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
 	communityservice "github.com/easc01/mindo-server/internal/services/community_service"
-	"github.com/easc01/mindo-server/pkg/logger"
 	"github.com/easc01/mindo-server/pkg/utils/constant"
 	networkutil "github.com/easc01/mindo-server/pkg/utils/network_util"
 	"github.com/easc01/mindo-server/pkg/utils/route"
@@ -30,7 +29,6 @@ func RegisterMessages(rg *gin.RouterGroup) {
 func messageHistoryPageHandler(c *gin.Context) {
 	communityID := c.Query("communityId")
 	lastMsgTime := c.Query("lastMessageTime")
-	logger.Log.Debug(lastMsgTime)
 
 	parsedCommID, err := uuid.Parse(communityID)
 
@@ -46,8 +44,6 @@ func messageHistoryPageHandler(c *gin.Context) {
 	parsedTime, err := time.Parse(constant.TimeLayout, lastMsgTime)
 	if err != nil {
 		parsedTime = time.Now()
-		logger.Log.Debug(parsedTime)
-
 	}
 
 	userMessages, statusCode, err := communityservice.GetMessageHistoryPage(

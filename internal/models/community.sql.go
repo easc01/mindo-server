@@ -13,13 +13,19 @@ import (
 )
 
 const createMessage = `-- name: CreateMessage :one
-INSERT INTO "message" (user_id, community_id, content, updated_by)
-VALUES (
-  $1,
-  $2,
-  $3,
-  $4
-) RETURNING id, user_id, community_id, content, updated_at, created_at, updated_by
+WITH inserted_message AS (
+  INSERT INTO "message" (user_id, community_id, content, updated_by)
+  VALUES ($1, $2, $3, $4)
+  RETURNING id, user_id, community_id, content, updated_at, created_at, updated_by
+)
+SELECT 
+  im.id, im.user_id, im.community_id, im.content, im.updated_at, im.created_at, im.updated_by, 
+  au.name, 
+  au.username, 
+  au.color, 
+  au.profile_picture_url
+FROM inserted_message im
+JOIN "app_user" au ON au.user_id = im.user_id
 `
 
 type CreateMessageParams struct {
@@ -29,14 +35,28 @@ type CreateMessageParams struct {
 	UpdatedBy   uuid.NullUUID
 }
 
-func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
+type CreateMessageRow struct {
+	ID                uuid.UUID
+	UserID            uuid.UUID
+	CommunityID       uuid.UUID
+	Content           sql.NullString
+	UpdatedAt         sql.NullTime
+	CreatedAt         sql.NullTime
+	UpdatedBy         uuid.NullUUID
+	Name              sql.NullString
+	Username          sql.NullString
+	Color             Color
+	ProfilePictureUrl sql.NullString
+}
+
+func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (CreateMessageRow, error) {
 	row := q.db.QueryRowContext(ctx, createMessage,
 		arg.UserID,
 		arg.CommunityID,
 		arg.Content,
 		arg.UpdatedBy,
 	)
-	var i Message
+	var i CreateMessageRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -45,6 +65,10 @@ func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (M
 		&i.UpdatedAt,
 		&i.CreatedAt,
 		&i.UpdatedBy,
+		&i.Name,
+		&i.Username,
+		&i.Color,
+		&i.ProfilePictureUrl,
 	)
 	return i, err
 }

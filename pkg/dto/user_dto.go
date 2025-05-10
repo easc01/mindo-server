@@ -8,21 +8,23 @@ import (
 )
 
 type AppUserDataDTO struct {
-	AccessToken       string           `json:"accessToken,omitempty"`
-	UserID            uuid.UUID        `json:"userId"`
-	UserType          models.UserType  `json:"userType"`
-	Username          string           `json:"username"`
-	ProfilePictureUrl string           `json:"profilePictureUrl"`
-	OauthClientID     string           `json:"oauthClientId"`
-	Bio               string           `json:"bio"`
-	Name              string           `json:"name"`
-	Mobile            string           `json:"mobile"`
-	Email             string           `json:"email"`
-	JoinedCommunities []CommunityDTO `json:"joinedCommunities"`
-	LastLoginAt       time.Time        `json:"lastLoginAt"`
-	UpdatedAt         time.Time        `json:"updatedAt"`
-	CreatedAt         time.Time        `json:"createdAt"`
-	UpdatedBy         uuid.UUID        `json:"updatedBy"`
+	AccessToken       string               `json:"accessToken,omitempty"`
+	UserID            uuid.UUID            `json:"userId"`
+	UserType          models.UserType      `json:"userType"`
+	Username          string               `json:"username"`
+	ProfilePictureUrl string               `json:"profilePictureUrl"`
+	OauthClientID     string               `json:"oauthClientId"`
+	Bio               string               `json:"bio"`
+	Name              string               `json:"name"`
+	Mobile            string               `json:"mobile"`
+	Email             string               `json:"email"`
+	JoinedCommunities []CommunityDTO       `json:"joinedCommunities"`
+	RecentPlaylists   []PlaylistPreviewDTO `json:"recentPlaylists"`
+	Color             models.Color         `json:"color"`
+	LastLoginAt       time.Time            `json:"lastLoginAt"`
+	UpdatedAt         time.Time            `json:"updatedAt"`
+	CreatedAt         time.Time            `json:"createdAt"`
+	UpdatedBy         uuid.UUID            `json:"updatedBy"`
 }
 
 type AdminUserDataDTO struct {

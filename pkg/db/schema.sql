@@ -1,5 +1,6 @@
 -- EXTENSTIONS
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- SEQUENCES
@@ -167,8 +168,21 @@ CREATE TABLE "user_joined_community" (
     PRIMARY KEY ("user_id", "community_id")
 );
 
--- User Table (with Enum)
+-- User Enum
 CREATE TYPE user_type AS ENUM ('app_user', 'admin_user');
+
+-- Color Enum
+CREATE TYPE color AS ENUM (
+  'red',
+  'blue',
+  'green',
+  'yellow',
+  'orange',
+  'purple',
+  'pink',
+  'brown',
+  'teal'
+);
 
 CREATE TABLE "user" (
     "id" uuid DEFAULT uuid_generate_v4 () PRIMARY KEY,
@@ -207,6 +221,7 @@ CREATE TABLE "app_user" (
     "username" VARCHAR(255) UNIQUE,
     "profile_picture_url" TEXT,
     "bio" TEXT,
+    "color" color NOT NULL DEFAULT 'yellow', 
     "name" VARCHAR(255),
     "mobile" VARCHAR(50),
     "email" VARCHAR(255),

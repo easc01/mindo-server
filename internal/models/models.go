@@ -13,6 +13,55 @@ import (
 	"github.com/google/uuid"
 )
 
+type Color string
+
+const (
+	ColorRed    Color = "red"
+	ColorBlue   Color = "blue"
+	ColorGreen  Color = "green"
+	ColorYellow Color = "yellow"
+	ColorOrange Color = "orange"
+	ColorPurple Color = "purple"
+	ColorPink   Color = "pink"
+	ColorBrown  Color = "brown"
+	ColorTeal   Color = "teal"
+)
+
+func (e *Color) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Color(s)
+	case string:
+		*e = Color(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Color: %T", src)
+	}
+	return nil
+}
+
+type NullColor struct {
+	Color Color
+	Valid bool // Valid is true if Color is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullColor) Scan(value interface{}) error {
+	if value == nil {
+		ns.Color, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Color.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullColor) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Color), nil
+}
+
 type UserType string
 
 const (
@@ -72,6 +121,7 @@ type AppUser struct {
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
 	Bio               sql.NullString
+	Color             Color
 	Name              sql.NullString
 	Mobile            sql.NullString
 	Email             sql.NullString

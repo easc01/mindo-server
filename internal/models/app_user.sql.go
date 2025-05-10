@@ -22,6 +22,7 @@ INSERT INTO
         mobile,
         password_hash,
         oauth_client_id,
+        color,
         updated_by
     )
 VALUES (
@@ -32,8 +33,9 @@ VALUES (
         $5, -- Mobile
         $6, -- Password Hash
         $7, -- OAuth Client ID
-        $8 -- Updated By
-    ) RETURNING user_id, oauth_client_id, username, profile_picture_url, bio, name, mobile, email, password_hash, last_login_at, updated_at, created_at, updated_by
+        $8, -- Color
+        $9 -- Updated By
+    ) RETURNING user_id, oauth_client_id, username, profile_picture_url, bio, color, name, mobile, email, password_hash, last_login_at, updated_at, created_at, updated_by
 `
 
 type CreateNewAppUserParams struct {
@@ -44,6 +46,7 @@ type CreateNewAppUserParams struct {
 	Mobile        sql.NullString
 	PasswordHash  sql.NullString
 	OauthClientID sql.NullString
+	Color         Color
 	UpdatedBy     uuid.NullUUID
 }
 
@@ -56,6 +59,7 @@ func (q *Queries) CreateNewAppUser(ctx context.Context, arg CreateNewAppUserPara
 		arg.Mobile,
 		arg.PasswordHash,
 		arg.OauthClientID,
+		arg.Color,
 		arg.UpdatedBy,
 	)
 	var i AppUser
@@ -65,6 +69,7 @@ func (q *Queries) CreateNewAppUser(ctx context.Context, arg CreateNewAppUserPara
 		&i.Username,
 		&i.ProfilePictureUrl,
 		&i.Bio,
+		&i.Color,
 		&i.Name,
 		&i.Mobile,
 		&i.Email,

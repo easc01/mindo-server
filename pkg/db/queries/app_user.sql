@@ -8,6 +8,7 @@ INSERT INTO
         mobile,
         password_hash,
         oauth_client_id,
+        color,
         updated_by
     )
 VALUES (
@@ -18,7 +19,8 @@ VALUES (
         $5, -- Mobile
         $6, -- Password Hash
         $7, -- OAuth Client ID
-        $8 -- Updated By
+        $8, -- Color
+        $9 -- Updated By
     ) RETURNING *;
 
 

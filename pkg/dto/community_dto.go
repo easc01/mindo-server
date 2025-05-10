@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"github.com/easc01/mindo-server/internal/models"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -41,6 +42,7 @@ type UserMessageDTO struct {
 	Name           string       `json:"name"`
 	Username       string       `json:"username"`
 	UserProfileUrl string       `json:"userProfilePic"`
+	UserColor      models.Color `json:"userColor"`
 	Messages       []MessageDTO `json:"messages"`
 }
 
@@ -48,4 +50,17 @@ type MessageDTO struct {
 	ID        uuid.UUID `json:"id"`
 	Content   string    `json:"content"`
 	Timestamp time.Time `json:"timestamp"`
+}
+
+type SocketMessageDTO struct {
+	MessageGroupID uuid.UUID    `json:"messageGroupId"`
+	MessageId      uuid.UUID    `json:"messageId"`
+	UserID         uuid.UUID    `json:"userId"`
+	Name           string       `json:"name"`
+	Username       string       `json:"username"`
+	UserProfileUrl string       `json:"userProfilePic"`
+	UserColor      models.Color `json:"userColor"`
+	CommunityID    uuid.UUID    `json:"communityId"`
+	Content        string       `json:"content"`
+	Timestamp      time.Time    `json:"timestamp"`
 }

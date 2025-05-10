@@ -13,14 +13,13 @@ import (
 )
 
 const getMessagePageByCommunityID = `-- name: GetMessagePageByCommunityID :many
-SELECT m.id, m.user_id, m.community_id, m.content, m.updated_at, m.created_at, m.updated_by, au.username, au.profile_picture_url, au.name
+SELECT m.id, m.user_id, m.community_id, m.content, m.updated_at, m.created_at, m.updated_by, au.username, au.profile_picture_url, au.name, au.color
 FROM "message" m
 JOIN app_user au ON au.user_id = m.user_id
 WHERE
     m.community_id = $1
     AND m.created_at < $2
 ORDER BY m.created_at DESC
-LIMIT 50
 `
 
 type GetMessagePageByCommunityIDParams struct {
@@ -39,6 +38,7 @@ type GetMessagePageByCommunityIDRow struct {
 	Username          sql.NullString
 	ProfilePictureUrl sql.NullString
 	Name              sql.NullString
+	Color             Color
 }
 
 func (q *Queries) GetMessagePageByCommunityID(ctx context.Context, arg GetMessagePageByCommunityIDParams) ([]GetMessagePageByCommunityIDRow, error) {
@@ -61,6 +61,7 @@ func (q *Queries) GetMessagePageByCommunityID(ctx context.Context, arg GetMessag
 			&i.Username,
 			&i.ProfilePictureUrl,
 			&i.Name,
+			&i.Color,
 		); err != nil {
 			return nil, err
 		}

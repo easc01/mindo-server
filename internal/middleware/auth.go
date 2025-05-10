@@ -53,6 +53,7 @@ func AuthenticateAndFetchUser(
 	switch claims.Role {
 	case models.UserTypeAppUser:
 		appUser, err := userrepository.GetAppUserByUserID(r.Context(), userID)
+
 		if err != nil {
 			return UserContextUnion{}, err
 		}
@@ -71,7 +72,9 @@ func AuthenticateAndFetchUser(
 				CreatedAt:         appUser.CreatedAt.Time,
 				UpdatedBy:         appUser.UpdatedBy.UUID,
 				UserType:          appUser.UserType,
+				Color:             appUser.Color,
 				JoinedCommunities: appUser.JoinedCommunities,
+				RecentPlaylists:   appUser.RecentPlaylists,
 			},
 			AdminUser: nil,
 		}, nil

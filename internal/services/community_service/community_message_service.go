@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/easc01/mindo-server/internal/middleware"
 	"github.com/easc01/mindo-server/internal/models"
 	"github.com/easc01/mindo-server/pkg/db"
 	"github.com/easc01/mindo-server/pkg/dto"
 	"github.com/easc01/mindo-server/pkg/utils/util"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -18,7 +20,7 @@ func SaveCommunityMessage(
 	communityID uuid.UUID,
 	userID uuid.UUID,
 	msg string,
-) (models.Message, error) {
+) (models.CreateMessageRow, error) {
 	return db.Queries.CreateMessage(c, models.CreateMessageParams{
 		CommunityID: communityID,
 		UserID:      userID,
@@ -28,7 +30,7 @@ func SaveCommunityMessage(
 }
 
 func GetMessageHistoryPage(
-	c context.Context,
+	c *gin.Context,
 	communityID uuid.UUID,
 	lastDate time.Time,
 ) ([]dto.UserMessageDTO, int, error) {
@@ -46,6 +48,24 @@ func GetMessageHistoryPage(
 	if err != nil {
 		return []dto.UserMessageDTO{}, http.StatusInternalServerError, err
 	}
+
+	user, ok := middleware.GetUser(c)
+
+	go func() {
+		// update updated_at of user joined community
+		if !ok || user.AppUser == nil {
+			return
+		}
+
+		db.Queries.UpdateUserJoinedCommunityAccess(
+			c,
+			models.UpdateUserJoinedCommunityAccessParams{
+				CommunityID: communityID,
+				UserID:      user.AppUser.UserID,
+				UpdatedBy:   util.GetNullUUID(user.AppUser.UserID),
+			},
+		)
+	}()
 
 	return serializeUserMessages(messages), http.StatusAccepted, nil
 }
@@ -81,6 +101,7 @@ func serializeUserMessages(messages []models.GetMessagePageByCommunityIDRow) []d
 			Username:       message.Username.String,
 			UserProfileUrl: message.ProfilePictureUrl.String,
 			Name:           message.Name.String,
+			UserColor:      message.Color,
 			Messages: []dto.MessageDTO{
 				{
 					ID:        message.ID,

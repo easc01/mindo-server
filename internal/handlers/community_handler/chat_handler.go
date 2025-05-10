@@ -2,6 +2,8 @@ package communityhandler
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -25,35 +27,27 @@ type RoomManager struct {
 	mu    sync.Mutex
 }
 
-// Map<RoomID, ChatClientDTO>
 var roomManager = RoomManager{
 	rooms: make(map[uuid.UUID]map[*dto.ChatClient]bool),
 }
 
-// AddClient registers a new client in a specific room
 func (m *RoomManager) AddClient(client *dto.ChatClient, roomID uuid.UUID) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// If the room doesn't exist, create it
 	if _, exists := m.rooms[roomID]; !exists {
 		m.rooms[roomID] = make(map[*dto.ChatClient]bool)
 	}
-
-	// Add the client to the room
 	m.rooms[roomID][client] = true
 }
 
-// RemoveClient removes a client from a specific room
 func (m *RoomManager) RemoveClient(client *dto.ChatClient, roomID uuid.UUID) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// Remove the client from the room
 	if roomClients, exists := m.rooms[roomID]; exists {
 		delete(roomClients, client)
 		if len(roomClients) == 0 {
-			// If no clients left in the room, delete the room
 			delete(m.rooms, roomID)
 		}
 	}
@@ -84,10 +78,8 @@ func HandleRoomChatWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// authenticate connection
 	r.Header.Set(constant.Authorization, authToken)
 	user, err := middleware.AuthenticateAndFetchUser(r, models.UserTypeAppUser)
-
 	if err != nil {
 		networkutil.WSError(
 			http.StatusUnauthorized,
@@ -96,7 +88,6 @@ func HandleRoomChatWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check whether user is in community
 	var userJoinedCommunity *dto.CommunityDTO
 	for _, community := range user.AppUser.JoinedCommunities {
 		if community.ID == parsedRoomID {
@@ -117,49 +108,67 @@ func HandleRoomChatWS(w http.ResponseWriter, r *http.Request) {
 		Conn:    conn,
 	}
 
-	// Add client to the room
 	roomManager.AddClient(&client, parsedRoomID)
 	defer roomManager.RemoveClient(&client, parsedRoomID)
 
-	// Handle incoming messages
 	for {
-		_, msg, err := conn.ReadMessage()
+		_, rawMsg, err := conn.ReadMessage()
 		if err != nil {
 			logger.Log.Errorf("read error, %s", err)
 			break
 		}
-		logger.Log.Infof("received in room %s: %s", parsedRoomID, msg)
-		// Broadcast message to the room
-		roomManager.Broadcast(parsedRoomID, user.AppUser.UserID, msg)
+		logger.Log.Infof("received in room %s: %s", parsedRoomID, string(rawMsg))
+		roomManager.Broadcast(parsedRoomID, user.AppUser.UserID, string(rawMsg))
 	}
 }
 
-// Broadcast sends a message to all clients in a specific room
-func (m *RoomManager) Broadcast(roomID uuid.UUID, userID uuid.UUID, msg []byte) {
+func (m *RoomManager) Broadcast(roomID uuid.UUID, userID uuid.UUID, msg string) {
+	fmt.Println("incoming: ", msg)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// Check if the room exists
-	if roomClients, exists := m.rooms[roomID]; exists {
-		_, err := communityservice.SaveCommunityMessage(
-			context.Background(),
-			roomID,
-			userID,
-			string(msg),
-		)
+	roomClients, exists := m.rooms[roomID]
+	if !exists {
+		return
+	}
 
+	// Persist only the content of the message
+	savedMsg, err := communityservice.SaveCommunityMessage(
+		context.Background(),
+		roomID,
+		userID,
+		msg,
+	)
+
+	if err != nil {
+		logger.Log.Errorf("failed to save message: %s", err)
+		return
+	}
+
+	jsonMsg, err := json.Marshal(dto.SocketMessageDTO{
+		MessageId:      savedMsg.ID,
+		MessageGroupID: uuid.New(),
+		Name:           savedMsg.Name.String,
+		Username:       savedMsg.Username.String,
+		UserProfileUrl: savedMsg.ProfilePictureUrl.String,
+		UserColor:      savedMsg.Color,
+		UserID:         savedMsg.UserID,
+		CommunityID:    savedMsg.CommunityID,
+		Content:        savedMsg.Content.String,
+		Timestamp:      savedMsg.CreatedAt.Time,
+	})
+
+	if err != nil {
+		logger.Log.Errorf("failed to marshal message: %s", err)
+		return
+	}
+
+	for client := range roomClients {
+		err := client.Conn.WriteMessage(websocket.TextMessage, jsonMsg)
 		if err != nil {
-			logger.Log.Errorf("failed to save message, %s", err.Error())
-			return
-		}
-
-		for client := range roomClients {
-			err := client.Conn.WriteMessage(websocket.TextMessage, msg)
-			if err != nil {
-				logger.Log.Errorf("write error, %s", err)
-				client.Conn.Close()
-				delete(roomClients, client)
-			}
+			logger.Log.Errorf("write error: %s", err)
+			client.Conn.Close()
+			delete(roomClients, client)
 		}
 	}
 }

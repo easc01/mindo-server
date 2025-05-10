@@ -148,7 +148,7 @@ func CreateNewAppUser(newUserData dto.NewAppUserParams) (dto.AppUserDataDTO, err
 		Email:         util.GetSQLNullString(newUserData.Email),
 		Mobile:        util.GetSQLNullString(newUserData.Mobile),
 		PasswordHash:  sql.NullString{String: constant.Blank, Valid: false},
-
+		Color:         util.GetRandomColor(),
 		UpdatedBy: uuid.NullUUID{
 			UUID:  newUserID,
 			Valid: true,
@@ -221,6 +221,8 @@ func GetAppUserByUserID(id uuid.UUID) (dto.AppUserDataDTO, int, error) {
 		CreatedAt:         appUser.CreatedAt.Time,
 		UpdatedBy:         appUser.UpdatedBy.UUID,
 		UserType:          appUser.UserType,
+		Color:             appUser.Color,
 		JoinedCommunities: appUser.JoinedCommunities,
+		RecentPlaylists:   appUser.RecentPlaylists,
 	}, http.StatusAccepted, nil
 }

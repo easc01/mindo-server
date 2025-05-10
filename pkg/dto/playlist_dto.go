@@ -42,7 +42,7 @@ type PlaylistPreviewDTO struct {
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 	UpdatedBy    string    `json:"updatedBy"`
-	TopicsCount  int       `json:"topicsCount"`
+	TopicsCount  int       `json:"topicsCount,omitempty"`
 }
 
 type VideoDataDTO struct {
