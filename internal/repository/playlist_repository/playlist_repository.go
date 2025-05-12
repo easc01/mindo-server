@@ -20,6 +20,7 @@ type GetPlaylistWithTopicsRow struct {
 	CreatedAt    sql.NullTime
 	UpdatedAt    sql.NullTime
 	UpdatedBy    uuid.NullUUID
+	IsAIGen      bool
 	Topics       []dto.TopicsMiniDTO
 }
 
@@ -45,6 +46,7 @@ func GetPlaylistWithTopicsQuery(
 				p.created_at, 
 				p.updated_at, 
 				p.updated_by,
+				p.is_ai_gen,
 				COALESCE(
 					JSON_AGG(
 						JSON_BUILD_OBJECT(
@@ -75,6 +77,7 @@ func GetPlaylistWithTopicsQuery(
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UpdatedBy,
+		&i.IsAIGen,
 		&topicsJSON,
 	)
 	if err != nil {

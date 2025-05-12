@@ -40,6 +40,12 @@ func RegisterPlaylists(rg *gin.RouterGroup) {
 			middleware.RequireRole(models.UserTypeAppUser, models.UserTypeAdminUser),
 			getPlaylistByIdHandler,
 		)
+
+		playlistRg.POST(
+			"/gen-ai",
+			middleware.RequireRole(models.UserTypeAppUser),
+			generatePlaylistHandler,
+		)
 	}
 }
 
@@ -81,7 +87,7 @@ func createPlaylistHandler(c *gin.Context) {
 		return
 	}
 
-	playlistDetails, statusCode, err := playlistservice.ProcessPlaylistCreationByAdmin(
+	playlistDetails, statusCode, err := playlistservice.ProcessPlaylistCreation(
 		c,
 		req,
 		user.AdminUser.UserID,
@@ -148,6 +154,35 @@ func getPlaylistByIdHandler(c *gin.Context) {
 
 	networkutil.NewResponse(
 		statusCode,
+		playlistData,
+	).Send(c)
+}
+
+func generatePlaylistHandler(c *gin.Context) {
+	playlistTitle := c.Query("playlistTitle")
+
+	if playlistTitle == "" {
+		networkutil.NewErrorResponse(
+			http.StatusBadRequest,
+			"playlistTitle query param is required",
+			nil,
+		).Send(c)
+		return
+	}
+
+	playlistData, err := playlistservice.GenerateAndSavePlaylist(c, playlistTitle)
+
+	if err != nil {
+		networkutil.NewErrorResponse(
+			http.StatusInternalServerError,
+			err.Error(),
+			nil,
+		).Send(c)
+		return
+	}
+
+	networkutil.NewResponse(
+		http.StatusAccepted,
 		playlistData,
 	).Send(c)
 }

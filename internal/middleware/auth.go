@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -55,6 +56,9 @@ func AuthenticateAndFetchUser(
 		appUser, err := userrepository.GetAppUserByUserID(r.Context(), userID)
 
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return UserContextUnion{}, fmt.Errorf("user not found, sign in again")
+			}
 			return UserContextUnion{}, err
 		}
 		return UserContextUnion{
@@ -82,6 +86,9 @@ func AuthenticateAndFetchUser(
 	case models.UserTypeAdminUser:
 		adminUser, err := db.Queries.GetAdminUserByUserID(r.Context(), userID)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return UserContextUnion{}, fmt.Errorf("admin not found, sign in again")
+			}
 			return UserContextUnion{}, err
 		}
 		return UserContextUnion{

@@ -7,7 +7,8 @@ INSERT INTO
         thumbnail_url,
         code,
         interest_id,
-        updated_by
+        updated_by,
+        is_ai_gen
     )
 VALUES (
         $1, -- Name
@@ -15,23 +16,10 @@ VALUES (
         $3, -- Thumbnail URL
         $4, -- unique hexcode of playlist
         $5, -- domain/interest id
-        $6 -- Updated By
+        $6, -- Updated By
+        $7  -- Is gen by ai
     ) RETURNING *;
 
--- unused, left for reference
--- name: GetPlaylistWithTopics :one
-SELECT p.id, p.name, p.description, p.code, p.thumbnail_url, p.views, p.created_at, p.updated_at, p.updated_by, COALESCE(
-        json_agg (
-            t.name
-            ORDER BY t.number ASC
-        ), '[]'
-    ) AS topics
-FROM playlist p
-    LEFT JOIN topic t ON p.id = t.playlist_id
-WHERE
-    p.id = $1
-GROUP BY
-    p.id;
 
 -- name: UpdatePlaylistViewCountById :exec
 UPDATE playlist SET views = views + $2 WHERE id = $1;
@@ -48,6 +36,7 @@ SELECT
     p.created_at,
     p.updated_at,
     p.updated_by,
+    p.is_ai_gen,
     COALESCE(COUNT(t.id), 0) AS topics_count
 FROM playlist p
 LEFT JOIN topic t ON t.playlist_id = p.id

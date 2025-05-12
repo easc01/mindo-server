@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/easc01/mindo-server/internal/config"
 	"github.com/easc01/mindo-server/internal/models"
@@ -15,17 +14,7 @@ var Queries *models.Queries
 
 func InitDB() {
 	var err error
-	DB, err = sql.Open(
-		"postgres",
-		fmt.Sprintf(
-			"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
-			config.GetConfig().DbUser,
-			config.GetConfig().DbPassword,
-			config.GetConfig().DbHost,
-			config.GetConfig().DbPort,
-			config.GetConfig().DbName,
-		),
-	)
+	DB, err = sql.Open("postgres", config.GetConfig().DbConnectionUri)
 	if err != nil {
 		logger.Log.Error("DB connection failed", err)
 		panic(err)

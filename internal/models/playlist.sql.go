@@ -20,7 +20,8 @@ INSERT INTO
         thumbnail_url,
         code,
         interest_id,
-        updated_by
+        updated_by,
+        is_ai_gen
     )
 VALUES (
         $1, -- Name
@@ -28,8 +29,9 @@ VALUES (
         $3, -- Thumbnail URL
         $4, -- unique hexcode of playlist
         $5, -- domain/interest id
-        $6 -- Updated By
-    ) RETURNING id, interest_id, name, code, description, views, thumbnail_url, updated_at, created_at, updated_by
+        $6, -- Updated By
+        $7  -- Is gen by ai
+    ) RETURNING id, interest_id, name, code, description, views, is_ai_gen, thumbnail_url, updated_at, created_at, updated_by
 `
 
 type CreatePlaylistParams struct {
@@ -39,6 +41,7 @@ type CreatePlaylistParams struct {
 	Code         string
 	InterestID   uuid.NullUUID
 	UpdatedBy    uuid.NullUUID
+	IsAiGen      bool
 }
 
 // Create a new playlist
@@ -50,6 +53,7 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 		arg.Code,
 		arg.InterestID,
 		arg.UpdatedBy,
+		arg.IsAiGen,
 	)
 	var i Playlist
 	err := row.Scan(
@@ -59,6 +63,7 @@ func (q *Queries) CreatePlaylist(ctx context.Context, arg CreatePlaylistParams) 
 		&i.Code,
 		&i.Description,
 		&i.Views,
+		&i.IsAiGen,
 		&i.ThumbnailUrl,
 		&i.UpdatedAt,
 		&i.CreatedAt,
@@ -79,6 +84,7 @@ SELECT
     p.created_at,
     p.updated_at,
     p.updated_by,
+    p.is_ai_gen,
     COALESCE(COUNT(t.id), 0) AS topics_count
 FROM playlist p
 LEFT JOIN topic t ON t.playlist_id = p.id
@@ -98,6 +104,7 @@ type GetAllPlaylistsPreviewsRow struct {
 	CreatedAt    sql.NullTime
 	UpdatedAt    sql.NullTime
 	UpdatedBy    uuid.NullUUID
+	IsAiGen      bool
 	TopicsCount  interface{}
 }
 
@@ -121,6 +128,7 @@ func (q *Queries) GetAllPlaylistsPreviews(ctx context.Context, dollar_1 interfac
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UpdatedBy,
+			&i.IsAiGen,
 			&i.TopicsCount,
 		); err != nil {
 			return nil, err
@@ -134,53 +142,6 @@ func (q *Queries) GetAllPlaylistsPreviews(ctx context.Context, dollar_1 interfac
 		return nil, err
 	}
 	return items, nil
-}
-
-const getPlaylistWithTopics = `-- name: GetPlaylistWithTopics :one
-SELECT p.id, p.name, p.description, p.code, p.thumbnail_url, p.views, p.created_at, p.updated_at, p.updated_by, COALESCE(
-        json_agg (
-            t.name
-            ORDER BY t.number ASC
-        ), '[]'
-    ) AS topics
-FROM playlist p
-    LEFT JOIN topic t ON p.id = t.playlist_id
-WHERE
-    p.id = $1
-GROUP BY
-    p.id
-`
-
-type GetPlaylistWithTopicsRow struct {
-	ID           uuid.UUID
-	Name         sql.NullString
-	Description  sql.NullString
-	Code         string
-	ThumbnailUrl sql.NullString
-	Views        sql.NullInt32
-	CreatedAt    sql.NullTime
-	UpdatedAt    sql.NullTime
-	UpdatedBy    uuid.NullUUID
-	Topics       interface{}
-}
-
-// unused, left for reference
-func (q *Queries) GetPlaylistWithTopics(ctx context.Context, id uuid.UUID) (GetPlaylistWithTopicsRow, error) {
-	row := q.db.QueryRowContext(ctx, getPlaylistWithTopics, id)
-	var i GetPlaylistWithTopicsRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.Code,
-		&i.ThumbnailUrl,
-		&i.Views,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.UpdatedBy,
-		&i.Topics,
-	)
-	return i, err
 }
 
 const updatePlaylistViewCountById = `-- name: UpdatePlaylistViewCountById :exec

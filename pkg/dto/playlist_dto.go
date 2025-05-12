@@ -7,6 +7,7 @@ type CreatePlaylistRequest struct {
 	Description  string   `json:"description"  binding:"required"`
 	DomainName   string   `json:"domainName"   binding:"required"`
 	ThumbnailURL string   `json:"thumbnailUrl" binding:"required"`
+	IsAIGen      bool     `json:"isAIGen"`
 	Topics       []string `json:"topics"       binding:"required,dive"`
 }
 
@@ -21,6 +22,7 @@ type PlaylistDetailsDTO struct {
 	CreatedAt    time.Time       `json:"createdAt"`
 	UpdatedAt    time.Time       `json:"updatedAt"`
 	UpdatedBy    string          `json:"updatedBy"`
+	IsAIGen      bool            `json:"isAIGen"`
 	Topics       []TopicsMiniDTO `json:"topics"`
 }
 
@@ -42,6 +44,7 @@ type PlaylistPreviewDTO struct {
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 	UpdatedBy    string    `json:"updatedBy"`
+	IsAIGen      bool      `json:"isAIGen"`
 	TopicsCount  int       `json:"topicsCount,omitempty"`
 }
 
@@ -70,4 +73,14 @@ type VideoMiniDTO struct {
 type GroupedVideoDataResponse struct {
 	Video      VideoDataDTO   `json:"video"`
 	MoreVideos []VideoDataDTO `json:"moreVideos"`
+}
+
+type GeneratedPlaylist struct {
+	Description string   `json:"description"`
+	Title       string   `json:"subject"`
+	Topics      []string `json:"syllabus"`
+}
+
+type GeneratePlaylistParams struct {
+	Title string `json:"subject"`
 }

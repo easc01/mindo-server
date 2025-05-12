@@ -15,7 +15,7 @@ import (
 
 func SearchVideosByTopic(query string, maxResults int) ([]dto.VideoMiniDTO, error) {
 	url := fmt.Sprintf(
-		"https://www.googleapis.com/youtube/v3/search?key=%s&q=%s&safeSearch=strict&type=video&videoEmbeddable=true&part=snippet&videoDuration=any&maxResults=%s",
+		"https://www.googleapis.com/youtube/v3/search?key=%s&q=%s&safeSearch=strict&type=video&videoEmbeddable=true&part=snippet&videoDuration=medium&maxResults=%s",
 		config.GetConfig().YoutubeAPIKey,
 		url.QueryEscape(query),
 		strconv.Itoa(maxResults),

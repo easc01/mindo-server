@@ -25,13 +25,9 @@ const (
 )
 
 type Config struct {
+	AppPort            string
 	Env                Environment
-	ApiBaseUrl         string
-	DbHost             string
-	DbPort             string
-	DbUser             string
-	DbPassword         string
-	DbName             string
+	DbConnectionUri    string
 	JwtSecret          string
 	GoogleAPIKey       string
 	GoogleClientId     string
@@ -41,12 +37,9 @@ type Config struct {
 
 func GetConfig() *Config {
 	return &Config{
+		DbConnectionUri:    getEnv("DB_URI", "postgres://postgres:6515@localhost:5432/mindo"),
+		AppPort:            getEnv("APP_PORT", "8080"),
 		Env:                Environment(getEnv("ENV", "dev")),
-		DbHost:             getEnv("DB_HOST", "localhost"),
-		DbPort:             getEnv("DB_PORT", "5432"),
-		DbUser:             getEnv("DB_USER", "postgres"),
-		DbPassword:         getEnv("DB_PASSWORD", "__DB_PASSWORD__"),
-		DbName:             getEnv("DB_NAME", "mindo"),
 		JwtSecret:          getEnv("JWT_SECRET", "__JWT_SECRET__"),
 		GoogleAPIKey:       getEnv("GOOGLE_API_KEY", "__GOOGLE_API_KEY__"),
 		GoogleClientId:     getEnv("GOOGLE_CLIENT_ID", "__GOOGLE_CLIENT_ID__"),

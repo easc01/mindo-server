@@ -13,6 +13,7 @@ import (
 	playlistrepository "github.com/easc01/mindo-server/internal/repository/playlist_repository"
 	topicrepository "github.com/easc01/mindo-server/internal/repository/topic_repository"
 	youtubevideorepository "github.com/easc01/mindo-server/internal/repository/youtube_video_repository"
+	aiservice "github.com/easc01/mindo-server/internal/services/ai_service"
 	interestservice "github.com/easc01/mindo-server/internal/services/interest_service"
 	youtubeservice "github.com/easc01/mindo-server/internal/services/youtube_service"
 	"github.com/easc01/mindo-server/pkg/db"
@@ -29,18 +30,20 @@ func serializeTopics(topics *[]models.Topic) *[]dto.TopicsMiniDTO {
 
 	for _, topic := range *topics {
 		serializedTopics = append(serializedTopics, dto.TopicsMiniDTO{
-			Id:   topic.ID.String(),
-			Name: topic.Name.String,
+			Id:          topic.ID.String(),
+			Name:        topic.Name.String,
+			VideoID:     "",
+			TopicNumber: int(topic.Number.Int32),
 		})
 	}
 
 	return &serializedTopics
 }
 
-func ProcessPlaylistCreationByAdmin(
+func ProcessPlaylistCreation(
 	c *gin.Context,
 	req dto.CreatePlaylistRequest,
-	adminId uuid.UUID,
+	userId uuid.UUID,
 ) (dto.PlaylistDetailsDTO, int, error) {
 
 	// Begin a new transaction
@@ -80,13 +83,13 @@ func ProcessPlaylistCreationByAdmin(
 	}()
 
 	// Create the playlist
-	playlist, statusCode, err := CreatePlaylist(c, req, adminId, tx)
+	playlist, statusCode, err := CreatePlaylist(c, req, userId, tx)
 	if err != nil {
 		return dto.PlaylistDetailsDTO{}, statusCode, err
 	}
 
 	// Batch insert topics
-	topics, statusCode, err := BatchInsertPlaylistTopic(c, req.Topics, adminId, playlist.ID, tx)
+	topics, statusCode, err := BatchInsertPlaylistTopic(c, req.Topics, userId, playlist.ID, tx)
 	if err != nil {
 		return dto.PlaylistDetailsDTO{}, statusCode, err
 	}
@@ -105,6 +108,7 @@ func ProcessPlaylistCreationByAdmin(
 		CreatedAt:    playlist.CreatedAt.Time,
 		UpdatedAt:    playlist.UpdatedAt.Time,
 		UpdatedBy:    playlist.UpdatedBy.UUID.String(),
+		IsAIGen:      playlist.IsAiGen,
 		Topics:       *serializedTopics,
 	}, http.StatusCreated, nil
 }
@@ -135,6 +139,7 @@ func CreatePlaylist(
 		Code:         util.GenerateHexCode(playlistCount),
 		UpdatedBy:    util.GetNullUUID(userId),
 		InterestID:   util.GetNullUUID(interest.ID),
+		IsAiGen:      req.IsAIGen,
 	}
 
 	playlist, err := db.Queries.WithTx(tx).CreatePlaylist(c, playlistParams)
@@ -264,6 +269,7 @@ func GetPlaylistWithTopics(
 		CreatedAt:    playlist.CreatedAt.Time,
 		UpdatedAt:    playlist.UpdatedAt.Time,
 		UpdatedBy:    playlist.UpdatedBy.UUID.String(),
+		IsAIGen:      playlist.IsAIGen,
 		Topics:       playlist.Topics,
 	}, http.StatusAccepted, nil
 }
@@ -296,6 +302,7 @@ func GetAllPlaylistPreviews(
 			CreatedAt:    playlist.CreatedAt.Time,
 			UpdatedAt:    playlist.UpdatedAt.Time,
 			UpdatedBy:    playlist.UpdatedBy.UUID.String(),
+			IsAIGen:      playlist.IsAiGen,
 			TopicsCount:  int(playlist.TopicsCount.(int64)),
 		})
 	}
@@ -398,4 +405,44 @@ func GroupVideos(videos []dto.VideoDataDTO, videoID string) dto.GroupedVideoData
 	}
 
 	return result
+}
+
+func GenerateAndSavePlaylist(
+	c *gin.Context,
+	playlistTitle string,
+) (dto.PlaylistDetailsDTO, error) {
+	generatedPlaylists, err := aiservice.GenerateRoadmaps([]dto.GeneratePlaylistParams{
+		{
+			Title: playlistTitle,
+		},
+	})
+
+	if err != nil && len(generatedPlaylists) == 0 {
+		logger.Log.Errorf(
+			"failed to generate playlist %s, because %s, generated playlists: %v",
+			playlistTitle,
+			err.Error(),
+			generatedPlaylists,
+		)
+		return dto.PlaylistDetailsDTO{}, err
+	}
+
+	user, _ := middleware.GetUser(c)
+	playlistData := generatedPlaylists[0]
+
+	savedPlaylistData, _, err := ProcessPlaylistCreation(c, dto.CreatePlaylistRequest{
+		Name:         playlistData.Title,
+		Description:  playlistData.Description,
+		DomainName:   "None",
+		ThumbnailURL: "/example.com",
+		Topics:       playlistData.Topics,
+		IsAIGen:      true,
+	}, user.AppUser.UserID)
+
+	if err != nil {
+		logger.Log.Errorf("failed to save generated playlist, %s", err.Error())
+		return dto.PlaylistDetailsDTO{}, err
+	}
+
+	return savedPlaylistData, nil
 }

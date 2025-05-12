@@ -177,6 +177,7 @@ type Playlist struct {
 	Code         string
 	Description  sql.NullString
 	Views        sql.NullInt32
+	IsAiGen      bool
 	ThumbnailUrl sql.NullString
 	UpdatedAt    sql.NullTime
 	CreatedAt    sql.NullTime
