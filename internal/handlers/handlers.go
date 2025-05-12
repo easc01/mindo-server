@@ -25,7 +25,7 @@ func InitREST() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"http://localhost:5173", "https://app.mindo.easc01.com"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
@@ -43,7 +43,7 @@ func InitREST() {
 		c.JSON(http.StatusOK, gin.H{
 			"host": hostInfo,
 			"cpu":  cpuInfo,
-			"mem":  memInfo,
+			"memory":  memInfo,
 			"disk": diskInfo,
 		})
 	})
