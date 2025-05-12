@@ -44,7 +44,7 @@ func GetConfig() *Config {
 		GoogleAPIKey:       getEnv("GOOGLE_API_KEY", "__GOOGLE_API_KEY__"),
 		GoogleClientId:     getEnv("GOOGLE_CLIENT_ID", "__GOOGLE_CLIENT_ID__"),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", "__GOOGLE_CLIENT_SECRET__"),
-		YoutubeAPIKey:      getEnv("YOUTUBE_API_KEY_DEV", "__YOUTUBE_API_KEY_DEV__"),
+		YoutubeAPIKey:      getEnv("YOUTUBE_API_KEY", "__YOUTUBE_API_KEY__"),
 	}
 }
 
