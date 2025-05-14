@@ -19,12 +19,18 @@ func RegisterQuiz(rg *gin.RouterGroup) {
 		quizRg.POST(
 			"/gen-ai",
 			middleware.RequireRole(models.UserTypeAppUser),
-			generateStatelessQuizHandler,
+			generateQuizHandler,
+		)
+
+		quizRg.POST(
+			"/verify",
+			middleware.RequireRole(models.UserTypeAppUser),
+			verifyQuizAnswersHandler,
 		)
 	}
 }
 
-func generateStatelessQuizHandler(c *gin.Context) {
+func generateQuizHandler(c *gin.Context) {
 	topicName := c.Query("topicName")
 
 	if topicName == "" {
@@ -36,10 +42,33 @@ func generateStatelessQuizHandler(c *gin.Context) {
 		return
 	}
 
-	quizData, err := quizservice.GenerateStatelessQuiz(c, dto.GenerateQuizParams{
+	quizData, err := quizservice.GenerateAndSaveQuiz(c, dto.GenerateQuizParams{
 		TopicName:     topicName,
-		QuestionCount: 1,
+		QuestionCount: 10,
 	})
+
+	if err != nil {
+		networkutil.NewErrorResponse(
+			http.StatusInternalServerError,
+			err.Error(),
+			nil,
+		).Send(c)
+		return
+	}
+
+	networkutil.NewResponse(
+		http.StatusAccepted,
+		quizData,
+	).Send(c)
+}
+
+func verifyQuizAnswersHandler(c *gin.Context) {
+	req, ok := networkutil.GetRequestBody[dto.VerifyQuizParams](c)
+	if !ok {
+		return
+	}
+
+	quizData, err := quizservice.VerifyQuizResults(c, req)
 
 	if err != nil {
 		networkutil.NewErrorResponse(

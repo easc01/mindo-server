@@ -12,12 +12,12 @@ import (
 	"github.com/easc01/mindo-server/pkg/logger"
 )
 
-func GenerateRoadmaps(params []dto.GeneratePlaylistParams) ([]dto.GeneratedPlaylist, error) {
+func GenerateRoadmaps(params dto.GeneratePlaylistParams) (dto.GeneratedPlaylist, error) {
 	url := "https://arbazkhan-cs-mindo-apis.hf.space/MindoSyllabusGenerator"
 
 	jsonData, err := json.Marshal(params)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal params: %w", err)
+		return dto.GeneratedPlaylist{}, fmt.Errorf("failed to marshal params: %w", err)
 	}
 
 	var lastErr error
@@ -26,7 +26,7 @@ func GenerateRoadmaps(params []dto.GeneratePlaylistParams) ([]dto.GeneratedPlayl
 	for attempt := 1; attempt <= 5; attempt++ {
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 		if err != nil {
-			return nil, fmt.Errorf("failed to create request: %w", err)
+			return dto.GeneratedPlaylist{}, fmt.Errorf("failed to create request: %w", err)
 		}
 		req.Header.Set("Content-Type", "application/json")
 
@@ -38,16 +38,16 @@ func GenerateRoadmaps(params []dto.GeneratePlaylistParams) ([]dto.GeneratedPlayl
 
 			body, err := io.ReadAll(res.Body)
 			if err != nil {
-				return nil, fmt.Errorf("failed to read response body: %w", err)
+				return dto.GeneratedPlaylist{}, fmt.Errorf("failed to read response body: %w", err)
 			}
 
 			logger.Log.Infof("roadmap ai service response statusCode, %d, %s", res.StatusCode, string(body[:min(100, len(body))]))
 
 			if res.StatusCode == http.StatusOK {
-				var responseJson []dto.GeneratedPlaylist
+				var responseJson dto.GeneratedPlaylist
 				err = json.Unmarshal(body, &responseJson)
 				if err != nil {
-					return nil, fmt.Errorf("failed to parse roadmap ai response: %w, body: %s", err, string(body[:min(200, len(body))]))
+					return dto.GeneratedPlaylist{}, fmt.Errorf("failed to parse roadmap ai response: %w, body: %s", err, string(body[:min(200, len(body))]))
 				}
 				return responseJson, nil
 			}
@@ -62,5 +62,5 @@ func GenerateRoadmaps(params []dto.GeneratePlaylistParams) ([]dto.GeneratedPlayl
 		}
 	}
 
-	return nil, fmt.Errorf("all retry attempts failed: %w", lastErr)
+	return dto.GeneratedPlaylist{}, fmt.Errorf("all retry attempts failed: %w", lastErr)
 }

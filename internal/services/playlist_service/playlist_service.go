@@ -411,24 +411,21 @@ func GenerateAndSavePlaylist(
 	c *gin.Context,
 	playlistTitle string,
 ) (dto.PlaylistDetailsDTO, error) {
-	generatedPlaylists, err := aiservice.GenerateRoadmaps([]dto.GeneratePlaylistParams{
-		{
-			Title: playlistTitle,
-		},
+	playlistData, err := aiservice.GenerateRoadmaps(dto.GeneratePlaylistParams{
+		Title: playlistTitle,
 	})
 
-	if err != nil && len(generatedPlaylists) == 0 {
+	if err != nil {
 		logger.Log.Errorf(
 			"failed to generate playlist %s, because %s, generated playlists: %v",
 			playlistTitle,
 			err.Error(),
-			generatedPlaylists,
+			playlistData,
 		)
 		return dto.PlaylistDetailsDTO{}, err
 	}
 
 	user, _ := middleware.GetUser(c)
-	playlistData := generatedPlaylists[0]
 
 	savedPlaylistData, _, err := ProcessPlaylistCreation(c, dto.CreatePlaylistRequest{
 		Name:         playlistData.Title,

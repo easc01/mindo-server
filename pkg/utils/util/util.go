@@ -77,3 +77,26 @@ func ReverseSlice[T any](items []T) {
 		items[i], items[j] = items[j], items[i]
 	}
 }
+
+func GetGrade(totalAns, correctAns int) string {
+	if totalAns == 0 {
+		return "N/A"
+	}
+
+	percentage := float64(correctAns) / float64(totalAns) * 100
+
+	switch {
+	case percentage >= 90:
+		return "A+"
+	case percentage >= 80:
+		return "A"
+	case percentage >= 70:
+		return "B"
+	case percentage >= 60:
+		return "C"
+	case percentage >= 50:
+		return "D"
+	default:
+		return "F"
+	}
+}
