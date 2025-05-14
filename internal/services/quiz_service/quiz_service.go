@@ -2,7 +2,6 @@ package quizservice
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/easc01/mindo-server/internal/models"
 	aiservice "github.com/easc01/mindo-server/internal/services/ai_service"
@@ -78,7 +77,6 @@ func VerifyQuizResults(
 		var questionData models.QuizQuestion
 
 		for _, ques := range questions {
-			fmt.Println(question.QuestionId, ques.ID.String())
 
 			if question.QuestionId == ques.ID.String() {
 				questionData = ques

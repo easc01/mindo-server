@@ -431,7 +431,7 @@ func GenerateAndSavePlaylist(
 		Name:         playlistData.Title,
 		Description:  playlistData.Description,
 		DomainName:   "None",
-		ThumbnailURL: "/example.com",
+		ThumbnailURL: "",
 		Topics:       playlistData.Topics,
 		IsAIGen:      true,
 	}, user.AppUser.UserID)
